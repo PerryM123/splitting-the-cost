@@ -2,28 +2,45 @@
 <!-- TODO: backカメラがない場合、、、 -->
 <!-- TODO: stylelintとprettierを追加 -->
 <template>
-  <video class="video" id="videoId"  ref="appleSauce" autoplay="true"></video>
-  <img :src="dataUri"/>
-  <div class="buttonArea">
-    <button @click="takePhoto" class="snapshotButton">Press Me</button>
-  </div>
-  <label for="recognition-image-input">Choose image</label>
-  <input v-on:change="onChangeFunction" type="file" accept="image/jpeg, image/png" ref="recognitionImageInputElement" /><br />
-  <label for="recognition-confidence-input">Confidence</label>
-  <input style="width: 100px;"type="number" max="100" min="0" ref="recognitionConfidenceInputElement" value="70" /><br />
-  <label for="recognition-progress">File recognition progress:</label>
-  <progress ref="recognitionProgressElement" max="100" value="0">0%</progress>
-  <div ref="recognitionTextElement"></div>
-  <div ref="originalImageElement">
-    <div id="original-image"></div>
-    <div ref="labeledImageElement"></div>
-</div>
+  <template v-if="!resultText">
+    <video class="video" id="videoId"  ref="appleSauce" autoplay="true"></video>
+    <img :src="dataUri"/>
+    <div class="buttonArea">
+      <button @click="takePhoto" class="snapshotButton">Press Me</button>
+    </div>
+    <label for="recognition-image-input">Choose image</label>
+    <input v-on:change="onChangeFunction" type="file" accept="image/jpeg, image/png" ref="recognitionImageInputElement" /><br />
+    <label for="recognition-confidence-input">Confidence</label>
+    <input style="width: 100px;"type="number" max="100" min="0" ref="recognitionConfidenceInputElement" value="70" /><br />
+    <label for="recognition-progress">File recognition progress:</label>
+    <progress ref="recognitionProgressElement" max="100" value="0">0%</progress>
+    <div ref="recognitionTextElement"></div>
+    <div ref="originalImageElement">
+      <div id="original-image"></div>
+      <div ref="labeledImageElement"></div>
+    </div>
+  </template>
+  <template v-if="resultText">
+    <h2>結果</h2>
+    <p v-for="singleText in textSplitting">
+    {{ singleText }}</p>
+    <p>starting: {{ startingPoint }}</p>
+    <p>end: {{ endingPoint }}</p>
+    <!-- <p>
+      {{ resultText }}
+    </p> -->
+  </template>
 
 </template>
 <script lang="ts" setup>
 import CameraPhoto, { FACING_MODES, IMAGE_TYPES } from 'jslib-html5-camera-photo';
 import { createWorker, PSM, OEM } from 'tesseract.js';
 
+let resultText = ref<string>('');
+let textSplitting = ref<string[]>([]);
+let startingPoint = ref<number>()
+let endingPoint = ref<number>()
+console.log('start');
 
 const LANGUAGES = {
   ENGLISH: "eng",
@@ -54,15 +71,13 @@ const worker = await createWorker(LANGUAGES.JAPANESE);
 // await worker.setParameters({
 //     tessedit_char_whitelist: whitelistText,
 //   });
-console.log('test: worker: ', worker);
 
 
-
-const recognize = async () => {
-  console.log('start');
+const recognize = async (imagData: string) => {
+  console.log('recognize start');
   await worker.load();
   console.log('await worker.initialize');
-  const { data: { text } } = await worker.recognize(receiptInvertImage1);
+  const { data: { text } } = await worker.recognize(imagData);
   console.log(text);
   console.log('length is: ' ,text.length);
   let textSplit = text.split("\n")
@@ -90,11 +105,13 @@ const recognize = async () => {
   }
   
   await worker.terminate();
+
+  resultText.value = text
+  textSplitting.value = textSplit
+  startingPoint.value = startIndex
+endingPoint.value = finishIndex
   console.log('end'); 
 }
-console.log('before'); 
-recognize();
-console.log('after'); 
 
 // 画像のOCR処理
 // const readImageText = async() => {
@@ -136,15 +153,6 @@ const labeledImageElement = ref()
 //       console.log(text);
 //     }
 
-
-console.log();
-console.log('recognitionImageInputElement: ', recognitionImageInputElement);
-console.log('recognitionConfidenceInputElement: ', recognitionConfidenceInputElement);
-console.log('recognitionProgressElement: ', recognitionProgressElement);
-console.log('recognitionTextElement: ', recognitionTextElement);
-console.log('originalImageElement: ', originalImageElement);
-console.log('labeledImageElement: ', labeledImageElement);
-
 // TODO: eventをなくす
 const onChangeFunction = (event: any) => {
   console.log('change happened: event: ', event);
@@ -169,6 +177,7 @@ const takePhoto = () => {
       imageCompression
     };
     dataUri.value = cameraPhoto.getDataUri(config);
+    recognize(dataUri.value);
   }
 
 
