@@ -1,220 +1,308 @@
 
-<!-- TODO: backカメラがない場合、、、 -->
 <!-- TODO: stylelintとprettierを追加 -->
 <template>
-  <template v-if="!resultText">
-    <video class="video" id="videoId"  ref="appleSauce" autoplay="true"></video>
-    <img :src="dataUri"/>
-    <div class="buttonArea">
-      <button @click="takePhoto" class="snapshotButton">Press Me</button>
+  <div class="c-app">
+    <div class="crazy">
+      <div class="mainTitle">
+        <Title>
+          Splitting The Cost
+        </Title>
+      </div>
+      <div class="contents" v-if="!isNextPage">
+        <div>
+          <p>What is the 会計？</p>
+          <input class="inputBox" ref="totalBoxRef" v-model="initalTotal" type="number" />
+        </div>
+        <div>
+          <p>割引ある？</p>
+          <input class="inputBox" ref="discountBoxRef" v-model="discountTotal" type="number" />
+        </div>
+        <div class="butonArea">
+          <button @click="handleClick">次へ</button>
+        </div>
+      </div>
+      <div v-else>
+        <div class="contents">
+          <div class="menuItem">
+            <p class="menuTitle">Person</p>
+            <div class="radioGroup">
+              <div class="radioItem">
+                <input class="inputRadio" @click="radioClick" type="radio" name="person" id="hannah" value="hannah" checked />
+                <label class="radioLabel" for="hannah">Hannah</label>
+              </div>
+              <div class="radioItem">
+                <input class="inputRadio" @click="radioClick" type="radio" name="person" id="perry" value="perry" />
+                <label class="radioLabel" for="perry">Perry</label>
+              </div>
+            </div>
+          </div>
+          <div class="menuItem">
+            <p class="menuTitle">Product Name</p>
+            <input class="inputBox" ref="productNameRef" v-model="productName" type="text" />
+          </div>
+          <div class="menuItem">
+            <p class="menuTitle">Price</p>
+            <input class="inputBox" ref="priceRef" v-model="price" type="number" />
+          </div>
+          <div class="butonArea">
+            <button @click="handleClick">Add Item</button>
+          </div>
+        </div>
+        <div class="priceInfo contents">
+          <div>
+            <div class="boxTotal">
+              <div class="box box__person1"></div>
+              <div class="boxDescription">
+                <span>Thomas:</span><span class="singlePrice">3,500円</span>
+              </div>
+            </div>
+            <div class="boxTotal">
+              <div class="box box__person2"></div>
+              <div class="boxDescription">
+                <span>Frank:</span><span class="singlePrice">3,500円</span>
+              </div>
+            </div>
+            <div class="boxTotal">
+              <div class="boxDescription">
+                <span>二人の分:</span><span class="singlePrice">3,500円</span>
+              </div>
+            </div>
+            <div class="boxTotal">
+              <div class="boxDescription">
+                <span>割引:</span><span class="singlePrice">3,500円</span>
+              </div>
+            </div>
+          </div>
+          <div class="finalTotalInfo">
+            <span class="totalText">合計:</span><span class="grandTotal">4,339円</span><button>合計編集</button>
+          </div>
+        </div>
+        <div class="priceTable">
+          <table class="theActualPriceTable">
+            <tbody>
+              <tr class="tableRow">
+                <th>Name</th>
+                <th>Price</th>
+              </tr>
+              <tr class="tableRow tableRow__person1">
+                <td>リンゴ</td>
+                <td>1000円</td>
+                <td>
+                  <button>Edit</button>
+                  <button>Delete</button>
+                </td>
+              </tr>
+              <tr class="tableRow tableRow__person1">
+                <td>リンゴ</td>
+                <td>1000円</td>
+                <td>
+                  <button>Edit</button>
+                  <button>Delete</button>
+                </td>
+              </tr>
+              <tr class="tableRow tableRow__person2">
+                <td>リンゴ</td>
+                <td>1000円</td>
+                <td>
+                  <button>Edit</button>
+                  <button>Delete</button>
+                </td>
+              </tr>
+              <tr class="tableRow tableRow__person2">
+                <td>リンゴ</td>
+                <td>1000円</td>
+                <td>
+                  <button>Edit</button>
+                  <button>Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    <label for="recognition-image-input">Choose image</label>
-    <input v-on:change="onChangeFunction" type="file" accept="image/jpeg, image/png" ref="recognitionImageInputElement" /><br />
-    <label for="recognition-confidence-input">Confidence</label>
-    <input style="width: 100px;"type="number" max="100" min="0" ref="recognitionConfidenceInputElement" value="70" /><br />
-    <label for="recognition-progress">File recognition progress:</label>
-    <progress ref="recognitionProgressElement" max="100" value="0">0%</progress>
-    <div ref="recognitionTextElement"></div>
-    <div ref="originalImageElement">
-      <div id="original-image"></div>
-      <div ref="labeledImageElement"></div>
-    </div>
-  </template>
-  <template v-if="resultText">
-    <h2>結果</h2>
-    <p v-for="singleText in textSplitting">
-    {{ singleText }}</p>
-    <p>starting: {{ startingPoint }}</p>
-    <p>end: {{ endingPoint }}</p>
-    <!-- <p>
-      {{ resultText }}
-    </p> -->
-  </template>
+  </div>
+
 
 </template>
 <script lang="ts" setup>
-import CameraPhoto, { FACING_MODES, IMAGE_TYPES } from 'jslib-html5-camera-photo';
-import { createWorker, PSM, OEM } from 'tesseract.js';
+import Title from '@/components/atoms/Title.vue'
+const initalTotal = ref()
+const discountTotal = ref()
+const text = ref()
+const totalBoxRef = ref()
+const discountBoxRef = ref()
+const productNameRef = ref()
+const productName = ref()
+const priceRef = ref()
+const price = ref()
+const isNextPage = ref(false)
 
-let resultText = ref<string>('');
-let textSplitting = ref<string[]>([]);
-let startingPoint = ref<number>()
-let endingPoint = ref<number>()
-console.log('start');
-
-const LANGUAGES = {
-  ENGLISH: "eng",
-  JAPANESE: "jpn"
+const handleClick = () => {
+  isNextPage.value = true
+}
+const radioClick = () => {
+  productNameRef.value.focus()
+}
+const handleAddItem = () => {
+  console.log('handleAddItem')
 }
 
-// const imageUrl = 'https://tesseract.projectnaptha.com/img/eng_bw.png';
-const receiptImage1 = 'http://localhost:3000/receipt.jpeg '
-const receiptInvertImage1 = 'http://localhost:3000/receiptInvert.png '
-const receiptImage2 = 'http://localhost:3000/receipt2.jpeg'
-const receiptInvertImage2 = 'http://localhost:3000/invertedImage.png'
-const WHITELIST_CHARATERS = {
-  ENGLISH_LOWERCASE: 'abcdefghijklmnopqrstuvwxyz',
-  // ENGLISH_LOWERCASE: '',
-  ENGLISH_UPPERCASE: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-  // ENGLISH_UPPERCASE: '',
-  NUMBERS: '0123456789',
-  // NUMBERS: '',
-  JAPANESE_HIRAGANA: 'ぁあぃいぅうぇえぉおかがきぎくぐけげこごさざしじすずせぜそぞただちぢっつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもゃやゅゆょよらりるれろゎわゐゑをん',
-  // JAPANESE_HIRAGANA: '',
-  JAPANESE_KATAKANA: 'ァアィイゥウェエォオカガキギクグケゲコゴサザシジスズセゼソゾタダチヂッツヅテデトドナニヌネノハバパヒビピフブプヘベペホボポマミムメモャヤュユョヨラリルレロヮワヰヱヲンヴヵヶ',
-  // JAPANESE_KATAKANA: '',
-  JAPANESE_SPECIAL: 'お釣り ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝﾞﾟ￥¥￥-'
-}
-const whitelistText = `${WHITELIST_CHARATERS.ENGLISH_LOWERCASE}${WHITELIST_CHARATERS.ENGLISH_UPPERCASE}${WHITELIST_CHARATERS.NUMBERS}${WHITELIST_CHARATERS.JAPANESE_HIRAGANA}${WHITELIST_CHARATERS.JAPANESE_KATAKANA}${WHITELIST_CHARATERS.JAPANESE_SPECIAL}`
-
-const worker = await createWorker(LANGUAGES.JAPANESE);
-// await worker.setParameters({
-//     tessedit_char_whitelist: whitelistText,
-//   });
-
-
-const recognize = async (imagData: string) => {
-  console.log('recognize start');
-  await worker.load();
-  console.log('await worker.initialize');
-  const { data: { text } } = await worker.recognize(imagData);
-  console.log(text);
-  console.log('length is: ' ,text.length);
-  let textSplit = text.split("\n")
-  console.log('text.split("\n"): ' ,textSplit);
-  let startIndex = 0
-  let finishIndex = 0
-  textSplit.forEach((item, index) => {
-    if (item.indexOf('年') !== -1 &&
-    item.indexOf('月') !== -1 &&
-    item.indexOf('日') !== -1) {
-      console.log('starting point line was: ', index)
-      startIndex = index;
+onMounted(() => {
+  console.log('on mounted');
+  // TODO: 実装方法は確認必須
+  window.onbeforeunload = function(e) {
+    return 'Dialog text here.';
+  };
+  // TODO: 重複なコードをなくす
+  // TODO: anyをなくす
+  totalBoxRef.value?.addEventListener('keyup', (event: any) => {
+    if (event.keyCode === 13) {
+      console.log('enter was pressed')
+      discountBoxRef.value.focus();
     }
-    if (item.indexOf('合') !== -1 &&  !Number(item.at(item.length - 1))) {
-      console.log('ending point line was: ', index)
-      finishIndex = index;
+  })
+  discountBoxRef.value?.addEventListener('keyup', (event: any) => {
+    if (event.keyCode === 13) {
+      console.log('enter was pressed')
+      handleClick()
     }
-  });
-  console.log('startIndex: ', startIndex);
-  console.log('finishIndex: ', finishIndex);
-  if (startIndex !== 0 && finishIndex !== 0) {
-    for (let x = startIndex;x < finishIndex + 1;x++) {
-      console.log(`textSplit[${x}]: `, textSplit[x])
+  })
+  productNameRef.value?.addEventListener('keyup', (event: any) => {
+    if (event.keyCode === 13) {
+      console.log('enter was pressed')
+      priceRef.value.focus();
     }
-  }
-  
-  await worker.terminate();
-
-  resultText.value = text
-  textSplitting.value = textSplit
-  startingPoint.value = startIndex
-endingPoint.value = finishIndex
-  console.log('end'); 
-}
-
-// 画像のOCR処理
-// const readImageText = async() => {
-//   try {
-//     await worker.load()
-//     // OCRで読み取りたい言語を設定
-//     await worker.loadLanguage("jpn")
-//     await worker.initialize("jpn")
-//     const { data: { text } } = await worker.recognize(selectedImage) 
-//     await worker.terminate()
-    
-//     // 日本語テキストはスペースが入ってしまう可能性があるので、スペースを削除
-//     const strippedText = text.replace(/\s+/g, "")
-//     onReadOcrData(strippedText)
-//     setOcrState(STATUSES.SUCCEEDED)
-//   } catch (err) {
-//     setOcrState(STATUSES.FAILED)
-//   }
-// }
-
-
-const recognitionImageInputElement = ref()
-const recognitionConfidenceInputElement = ref()
-const recognitionProgressElement = ref()
-const recognitionTextElement = ref()
-const originalImageElement = ref()
-const labeledImageElement = ref()
-
-// const recognize = async () => {
-//       const img = document.getElementById('text-img');
-//       console.log(img);
-//       await worker.load();
-//       await worker.loadLanguage('eng');
-//       await worker.initialize('eng', OEM.LSTM_ONLY);
-//       await worker.setParameters({
-//         tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
-//       });
-//       const { data: { text } } = await worker.recognize(img);
-//       console.log(text);
-//     }
-
-// TODO: eventをなくす
-const onChangeFunction = (event: any) => {
-  console.log('change happened: event: ', event);
-//  if (!recognitionImageElement.files) {
-//    return null;
-//  }
-// const file = recognitionImageElement.files[0];
-}
-
-const appleSauce = ref<HTMLVideoElement>()
-let cameraPhoto: CameraPhoto;
-let dataUri = ref<string>();
-const takePhoto = () => {
-    console.log('takePhoto')
-    let sizeFactor = 1;
-    let imageType = IMAGE_TYPES.JPG;
-    let imageCompression = 1;
-
-    let config = {
-      sizeFactor,
-      imageType,
-      imageCompression
-    };
-    dataUri.value = cameraPhoto.getDataUri(config);
-    recognize(dataUri.value);
-  }
-
-
-
-  onMounted(() => {
-    console.log('onMounted: appleSauce: ', appleSauce);
-    // TODO: assertion ! を削除
-    cameraPhoto = new CameraPhoto(appleSauce.value!);
-    cameraPhoto.startCamera(FACING_MODES['ENVIRONMENT'])
-    .then(() => {
-      let log = `Camera started with default All`;
-      console.log(log);
-    })
-    .catch((error) => {
-      console.error('Camera not started!', error);
-    });
-
-    })
-
+  })
+  priceRef.value?.addEventListener('keyup', (event: any) => {
+    if (event.keyCode === 13) {
+      console.log('enter was pressed')
+      handleAddItem()
+    }
+  })
+});
 
 </script>
 <style lang="scss" scoped>
-.video {
+$personOne: #F4CCCC;
+$personTwo: #9FC5E8;
+
+* {
+  box-sizing: border-box;
+}
+
+.c-app {
+  display: flex;
+  justify-content: center;
+}
+
+// TODO: class名変更必須
+.crazy {
   width: 100%;
 }
 
-.buttonArea {
-  margin: 0 10px;
+.inputBox {
+  width: 100%;
 }
 
-.snapshotButton {
+.radioGroup {
+  display: flex;
+  gap: 10px;
+}
+
+.theActualPriceTable {
+  display: table;
+  border-collapse: collapse;
   width: 100%;
-  background: #2d2f31;
-  color: #fff;
-  border-radius: 10px;
-  padding: 10px 0px;
-  font-weight: 700;
-  display: inline-block;
+  
+  .tableRow {
+    border-bottom: 1px solid #ddd;
+    
+    &__person1 {
+      background: $personOne;
+    }
+  
+    &__person2 {
+      background: $personTwo;
+    }
+  }
+
+  th, td {
+    text-align: left;
+    padding: 8px;
+  }
+}
+.boxTotal {
+  position: relative;
+  margin-top: 10px;
+}
+
+.butonArea {
+  margin-top: 10px;
+  text-align: right;
+}
+
+.box {
+  height: 15px;
+  width: 15px;
+  border: 1px solid;
+  position: absolute;
+  top: 0px;
+  left: 5px;
+
+  &__person1 {
+    background: $personOne;
+  }
+  &__person2 {
+    background: $personTwo;
+  }
+}
+
+.boxDescription {
+  padding-left: 30px;
+}
+.totalText {
+  font-size: 16px;
+  font-weight: bold;
+}
+.grandTotal {
+  font-size: 30px;
+  font-weight: bold;
+}
+.finalTotalInfo {
+  margin-top: 10px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.radioLabel {
+  padding: 10px 10px 10px 5px;
+}
+
+.inputRadio {
+  height: 20px;
+  width: 20px;
+}
+
+.radioItem{
+  display: flex;
+    align-items: center;
+}
+
+.menuItem {
+  margin-top: 10px;
+}
+
+.menuTitle {
+  font-size: 20px;
+  // TODO: normalizerをなくし、reset.cssに変更
+  margin: 0;
+}
+.mainTitle {
+  padding-top: 25px;
+}
+.contents {
+  padding: 0 15px;
 }
 </style>
