@@ -12,16 +12,13 @@
   },
   "devDependencies": {
     "@google-cloud/vision": "^4.0.3",
-    "@types/jslib-html5-camera-photo": "^3.1.5",
     "nuxt": "^3.10.0",
     "sass": "^1.70.0",
     "vue": "^3.4.15",
     "vue-router": "^4.2.5"
   },
   "dependencies": {
-    "jslib-html5-camera-photo": "^3.3.4",
     "prettier": "^3.2.4",
-    "stylelint": "^16.2.1",
-    "tesseract.js": "^5.0.4"
+    "stylelint": "^16.2.1"
   }
 }
