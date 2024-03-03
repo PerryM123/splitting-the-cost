@@ -40,11 +40,11 @@
           </div>
           <div class="menuItem">
             <p class="menuTitle">Product Name</p>
-            <input class="inputBox" ref="productNameRef" v-model="productName" type="text" />
+            <input class="inputBox" @keydown.enter="productNameEnterKey" ref="productNameRef" v-model="productName" type="text" />
           </div>
           <div class="menuItem">
             <p class="menuTitle">Price</p>
-            <input class="inputBox" ref="priceRef" v-model="price" type="number" />
+            <input class="inputBox" @keydown.enter="priceEnterKey" ref="priceRef" v-model="price" type="number" />
           </div>
           <div class="butonArea">
             <button @click="handleAddItem">Add Item</button>
@@ -55,28 +55,36 @@
             <div class="boxTotal">
               <div class="box box__person1"></div>
               <div class="boxDescription">
-                <span>{{ USERS.HANNAH.DISPLAY_NAME }}:</span><span class="singlePrice">{{formatPrice(totalPay.hannah)}}</span>
+                <span>{{ USERS.HANNAH.DISPLAY_NAME }}:</span><span class="singlePrice">{{formatPrice(hannahPay)}}</span>
               </div>
             </div>
             <div class="boxTotal">
               <div class="box box__person2"></div>
               <div class="boxDescription">
-                <span>{{ USERS.PERRY.DISPLAY_NAME }}</span><span class="singlePrice">{{formatPrice(totalPay.perry)}}</span>
+                <span>{{ USERS.PERRY.DISPLAY_NAME }}</span><span class="singlePrice">{{formatPrice(perryPay)}}</span>
               </div>
             </div>
             <div class="boxTotal">
               <div class="boxDescription">
-                <span>二人の分:</span><span class="singlePrice">{{formatPrice(3500)}}</span>
+                <span>割引:</span><span class="singlePrice">{{ discountTotal ? formatPrice(discountTotal) : 0}}</span>
               </div>
             </div>
             <div class="boxTotal">
               <div class="boxDescription">
-                <span>割引:</span><span class="singlePrice">{{ formatPrice(discountTotal) }}</span>
+                <span>HannahとPerryの記入分:</span><span class="singlePrice">{{formatPrice(bothTotals)}}</span>
+              </div>
+            </div>
+            <div class="boxTotal">
+              <div class="boxDescription">
+                <span>二人で払う分:</span><span class="singlePrice">{{formatPrice(allTotal)}}</span>
               </div>
             </div>
           </div>
           <div class="finalTotalInfo">
-            <span class="totalText">合計:</span><span class="grandTotal">{{ formatPrice(initalTotal) }}</span><button>合計編集</button>
+            <span class="totalText">合計:<span class="grandTotal">{{ formatPrice(initalTotal) }}</span></span><button>合計編集</button>
+          </div>
+          <div class="finalTotalInfo">
+            <span class="totalText">合計(割引含め):<span class="grandTotal">{{ formatPrice(discountedTotal) }}</span></span>
           </div>
         </div>
         <div class="priceTable">
@@ -91,16 +99,16 @@
                 <td>{{ data.productName }}</td>
                 <td>{{ formatPrice(data.price) }}</td>
                 <td>
-                  <button>Edit</button>
-                  <button>Delete</button>
+                  <button @click="handleEditItem(data)" class="editButton">Edit</button>
+                  <button @click="handleDeleteItem(data)" class="deleteButton">Delete</button>
                 </td>
               </tr>
               <tr v-for="data in perryData.items" class="tableRow tableRow__person2">
                 <td>{{ data.productName }}</td>
-                <td>{{ data.price }}</td>
+                <td>{{ formatPrice(data.price) }}</td>
                 <td>
-                  <button>Edit</button>
-                  <button>Delete</button>
+                  <button @click="handleEditItem(data)" class="editButton">Edit</button>
+                  <button @click="handleDeleteItem(data)" class="deleteButton">Delete</button>
                 </td>
               </tr>
             </tbody>
@@ -132,9 +140,8 @@ const USERS = {
   }
 } as const;
 const ENTER_KEY = 13
-const initalTotal = ref()
-const discountTotal = ref()
-const text = ref()
+const initalTotal = ref(0)
+const discountTotal = ref(0)
 const totalBoxRef = ref()
 const discountBoxRef = ref()
 const productNameRef = ref()
@@ -144,7 +151,6 @@ const price = ref()
 const isNextPage = ref(false)
 const errorList = ref<string[]>([])
 // TODO: 分かりにくい変数名になってる、、
-const discountedTotal = ref(0);
 const selectedPerson = ref<string>(USERS.HANNAH.NAME)
 const perryData = ref<ShoppingData>({
   name: USERS.PERRY.DISPLAY_NAME,
@@ -155,6 +161,18 @@ const hannahData = ref<ShoppingData>({
   items: []
 }) 
 
+const productNameEnterKey = () => {
+  console.log('productNameEnterKey');
+  priceRef.value.focus()
+}
+
+// TODO: anyをなくす
+const priceEnterKey = () => {
+  console.log('priceEnterKey');
+  handleAddItem();
+  productNameRef.value.focus()
+} 
+
 const getPersonalTotal = (data: ShoppingData) => {
   console.log('getPersonalTotal: data: ', data);
   let total = 0;
@@ -163,14 +181,32 @@ const getPersonalTotal = (data: ShoppingData) => {
   });
   return total;
 };
+
+// TODO: anyをなくす
+const handleEditItem = (data: any) => {
+  console.log('handleEditItem: data: ', data);
+  // TODO: 挙動
+}
+// TODO: anyをなくす
+const handleDeleteItem = (data: any) => {
+  console.log('handleDeleteItem: data: ', data);
+  // TODO: 挙動
+}
+
 const totalPay = computed(() => {
-  console.log('totalPay')
   return {
     perry: getPersonalTotal(perryData.value),
     hannah: getPersonalTotal(hannahData.value)
   }
 });
-const perryTotal = ref(getPersonalTotal(perryData.value))
+const bothTotals = computed(() => totalPay.value.perry + totalPay.value.hannah)
+const discountedTotal = computed(() => initalTotal.value - discountTotal.value)
+const allTotal = computed(() => discountedTotal.value - bothTotals.value)
+const ourIndividualSplit = computed(() => allTotal.value / 2)
+const hannahPay = computed(() => Math.floor(totalPay.value.hannah + ourIndividualSplit.value))
+const perryPay = computed(() => discountedTotal.value - hannahPay.value
+)
+
 // const bothTotals = totalPay.perry + totalPay.hannah;
 // const allTotal = discountedTotal - bothTotals;
 // const ourIndividualSplit = allTotal / 2;
@@ -184,7 +220,7 @@ const formatPrice = (price: number) => {
 
 const isStepOneValid = () => {
   const isDiscountPriceHigherThanTotalCost = discountTotal.value > initalTotal.value
-  const isInitialTotalEmpty = initalTotal.value.length === 0
+  const isInitialTotalEmpty = initalTotal.value === 0
   const isDiscountOrTotalCostNegative = initalTotal.value < 0 || discountTotal.value < 0
 
   if (isDiscountPriceHigherThanTotalCost) {
@@ -204,7 +240,6 @@ const handleClickForStepOne = () => {
     return;
   }
   isNextPage.value = true
-  discountedTotal.value = initalTotal.value - discountTotal.value;
 }
 const radioClick = () => {
   productNameRef.value.focus()
@@ -328,8 +363,8 @@ $personTwo: #9FC5E8;
 }
 
 .box {
-  height: 15px;
-  width: 15px;
+  height: 25px;
+  width: 25px;
   border: 1px solid;
   position: absolute;
   top: 0px;
@@ -344,7 +379,7 @@ $personTwo: #9FC5E8;
 }
 
 .boxDescription {
-  padding-left: 30px;
+  padding-left: 40px;
 }
 .totalText {
   font-size: 16px;
@@ -389,6 +424,9 @@ $personTwo: #9FC5E8;
 }
 .contents {
   padding: 0 15px;
+  border-bottom: 1px solid #D9D9D9;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
 }
 .errorList {
   display: inline-block;
@@ -403,5 +441,12 @@ $personTwo: #9FC5E8;
   font-weight: bold;
   font-size: 25px;
   margin-left: 5px;
+}
+
+.editButton {
+
+}
+.deleteButton {
+  margin-left: 10px;
 }
 </style>
