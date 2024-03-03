@@ -1,8 +1,7 @@
-
 <!-- TODO: stylelintとprettierを追加 -->
 <template>
   <div class="c-app">
-    <div class="crazy">
+    <div class="mainContents">
       <div class="mainTitle">
         <Title>
           Splitting The Cost
@@ -56,13 +55,13 @@
             <div class="boxTotal">
               <div class="box box__person1"></div>
               <div class="boxDescription">
-                <span>Thomas:</span><span class="singlePrice">{{formatPrice(3500)}}</span>
+                <span>{{ USERS.HANNAH.DISPLAY_NAME }}:</span><span class="singlePrice">{{formatPrice(totalPay.hannah)}}</span>
               </div>
             </div>
             <div class="boxTotal">
               <div class="box box__person2"></div>
               <div class="boxDescription">
-                <span>Frank:</span><span class="singlePrice">{{formatPrice(3500)}}</span>
+                <span>{{ USERS.PERRY.DISPLAY_NAME }}</span><span class="singlePrice">{{formatPrice(totalPay.perry)}}</span>
               </div>
             </div>
             <div class="boxTotal">
@@ -155,6 +154,29 @@ const hannahData = ref<ShoppingData>({
   name: USERS.HANNAH.DISPLAY_NAME,
   items: []
 }) 
+
+const getPersonalTotal = (data: ShoppingData) => {
+  console.log('getPersonalTotal: data: ', data);
+  let total = 0;
+  data.items.forEach((item) => {
+    total += item.price;
+  });
+  return total;
+};
+const totalPay = computed(() => {
+  console.log('totalPay')
+  return {
+    perry: getPersonalTotal(perryData.value),
+    hannah: getPersonalTotal(hannahData.value)
+  }
+});
+const perryTotal = ref(getPersonalTotal(perryData.value))
+// const bothTotals = totalPay.perry + totalPay.hannah;
+// const allTotal = discountedTotal - bothTotals;
+// const ourIndividualSplit = allTotal / 2;
+// const hannahPay = Math.floor(totalPay.hannah + ourIndividualSplit);
+// const perryPay = discountedTotal - hannahPay
+
 
 const formatPrice = (price: number) => {
   return `${price.toLocaleString("en-US")}円`
@@ -260,8 +282,7 @@ $personTwo: #9FC5E8;
   justify-content: center;
 }
 
-// TODO: class名変更必須
-.crazy {
+.mainContents {
   width: 100%;
 }
 
@@ -376,5 +397,11 @@ $personTwo: #9FC5E8;
   padding: 10px;
   border: 1px red solid;
   padding-left: 30px;
+}
+
+.singlePrice {
+  font-weight: bold;
+  font-size: 25px;
+  margin-left: 5px;
 }
 </style>
