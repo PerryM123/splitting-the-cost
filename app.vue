@@ -1,4 +1,7 @@
 <!-- TODO: stylelintとprettierを追加 -->
+<!-- TODO: localStorageでデータを保存？cookie？ -->
+<!-- TODO: エラーハンドリング必須 -->
+<!-- TODO: anyをなくす -->
 <template>
   <div class="c-app">
     <div class="mainContents">
@@ -206,14 +209,6 @@ const ourIndividualSplit = computed(() => allTotal.value / 2)
 const hannahPay = computed(() => Math.floor(totalPay.value.hannah + ourIndividualSplit.value))
 const perryPay = computed(() => discountedTotal.value - hannahPay.value
 )
-
-// const bothTotals = totalPay.perry + totalPay.hannah;
-// const allTotal = discountedTotal - bothTotals;
-// const ourIndividualSplit = allTotal / 2;
-// const hannahPay = Math.floor(totalPay.hannah + ourIndividualSplit);
-// const perryPay = discountedTotal - hannahPay
-
-
 const formatPrice = (price: number) => {
   return `${price.toLocaleString("en-US")}円`
 }
