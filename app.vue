@@ -1,14 +1,60 @@
 <!-- TODO: stylelintとprettierを追加 -->
+<!-- TODO: prettier: trailingComma, singleQuote, endOfFile -->
 <!-- TODO: localStorageでデータを保存？cookie？ -->
 <!-- TODO: エラーハンドリング必須 -->
 <!-- TODO: anyをなくす -->
 <template>
   <div class="c-app">
+    <div v-if="isOpenEditModal || isOpenDeleteModal" class="modal">
+      <div @click="handleClickBlackOverlay" class="blackModal"></div>
+      <div v-if="isOpenEditModal" class="modalBox">
+        <div>
+          <h2 style="text-align: center">編集</h2>
+          <div class="menuItem">
+            <p class="menuTitle">Product Name</p>
+            <input
+              class="inputBox"
+              @keydown.enter="editProductNameEnterKey"
+              ref="editProductNameRef"
+              v-model="editProductName"
+              type="text"
+            />
+          </div>
+          <div class="menuItem">
+            <p class="menuTitle">Price</p>
+            <input
+              class="inputBox"
+              @keydown.enter="editPriceEnterKey"
+              ref="editPriceRef"
+              v-model="editPrice"
+              type="number"
+            />
+          </div>
+          <div class="butonArea">
+            <button @click="handleEditItem">Add Item</button>
+          </div>
+        </div>
+      </div>
+      <div v-if="isOpenDeleteModal" class="modalBox">
+        <div>
+          <h2 style="text-align: center">削除</h2>
+          <div class="menuItem">
+            上記を削除しますか？
+            <p class="menuTitle">Product Name</p>
+            <span>{{ nameToDelete }}</span>
+            <p class="menuTitle" style="margin-top: 10px">Price</p>
+            <span>{{ formatPrice(priceToDelete) }}</span>
+          </div>
+          <div class="butonArea">
+            <button @click="handleDeleteItem">削除</button>
+            <button @click="handleModalCancel">キャンセル</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="mainContents">
       <div class="mainTitle">
-        <Title>
-          Splitting The Cost
-        </Title>
+        <Title> Splitting The Cost </Title>
       </div>
       <div class="contents" v-if="!isNextPage">
         <ul v-if="errorList.length" class="errorList">
@@ -16,11 +62,25 @@
         </ul>
         <div>
           <p>What is the 会計？</p>
-          <input class="inputBox" ref="totalBoxRef" v-model="initalTotal" min="0" oninput="this.value = Math.abs(this.value)" type="number" />
+          <input
+            class="inputBox"
+            ref="totalBoxRef"
+            v-model="initalTotal"
+            min="0"
+            oninput="this.value = Math.abs(this.value)"
+            type="number"
+          />
         </div>
         <div>
           <p>割引ある？</p>
-          <input class="inputBox" ref="discountBoxRef" v-model="discountTotal" min="0" oninput="this.value = Math.abs(this.value)" type="number" />
+          <input
+            class="inputBox"
+            ref="discountBoxRef"
+            v-model="discountTotal"
+            min="0"
+            oninput="this.value = Math.abs(this.value)"
+            type="number"
+          />
         </div>
         <div class="butonArea">
           <button @click="handleClickForStepOne">次へ</button>
@@ -32,22 +92,50 @@
             <p class="menuTitle">Person</p>
             <div class="radioGroup">
               <div class="radioItem">
-                <input v-model="selectedPerson" class="inputRadio" @click="radioClick" type="radio" name="person" id="hannah" value="hannah" />
+                <input
+                  v-model="selectedPerson"
+                  class="inputRadio"
+                  @click="handleRadioClick"
+                  type="radio"
+                  name="person"
+                  id="hannah"
+                  value="hannah"
+                />
                 <label class="radioLabel" for="hannah">Hannah</label>
               </div>
               <div class="radioItem">
-                <input v-model="selectedPerson" class="inputRadio" @click="radioClick" type="radio" name="person" id="perry" value="perry" />
+                <input
+                  v-model="selectedPerson"
+                  class="inputRadio"
+                  @click="handleRadioClick"
+                  type="radio"
+                  name="person"
+                  id="perry"
+                  value="perry"
+                />
                 <label class="radioLabel" for="perry">Perry</label>
               </div>
             </div>
           </div>
           <div class="menuItem">
             <p class="menuTitle">Product Name</p>
-            <input class="inputBox" @keydown.enter="productNameEnterKey" ref="productNameRef" v-model="productName" type="text" />
+            <input
+              class="inputBox"
+              @keydown.enter="productNameEnterKey"
+              ref="productNameRef"
+              v-model="productName"
+              type="text"
+            />
           </div>
           <div class="menuItem">
             <p class="menuTitle">Price</p>
-            <input class="inputBox" @keydown.enter="priceEnterKey" ref="priceRef" v-model="price" type="number" />
+            <input
+              class="inputBox"
+              @keydown.enter="priceEnterKey"
+              ref="priceRef"
+              v-model="price"
+              type="number"
+            />
           </div>
           <div class="butonArea">
             <button @click="handleAddItem">Add Item</button>
@@ -58,39 +146,57 @@
             <div class="boxTotal">
               <div class="box box__person1"></div>
               <div class="boxDescription">
-                <span>{{ USERS.HANNAH.DISPLAY_NAME }}:</span><span class="singlePrice">{{formatPrice(hannahPay)}}</span>
+                <span>{{ USERS.HANNAH.DISPLAY_NAME }}:</span
+                ><span class="singlePrice">{{ formatPrice(hannahPay) }}</span>
               </div>
             </div>
             <div class="boxTotal">
               <div class="box box__person2"></div>
               <div class="boxDescription">
-                <span>{{ USERS.PERRY.DISPLAY_NAME }}</span><span class="singlePrice">{{formatPrice(perryPay)}}</span>
+                <span>{{ USERS.PERRY.DISPLAY_NAME }}</span
+                ><span class="singlePrice">{{ formatPrice(perryPay) }}</span>
               </div>
             </div>
             <div class="boxTotal">
               <div class="boxDescription">
-                <span>割引:</span><span class="singlePrice">{{ discountTotal ? formatPrice(discountTotal) : 0}}</span>
+                <span>割引:</span
+                ><span class="singlePrice">{{
+                  discountTotal ? formatPrice(discountTotal) : 0
+                }}</span>
               </div>
             </div>
             <div class="boxTotal">
               <div class="boxDescription">
-                <span>HannahとPerryの記入分:</span><span class="singlePrice">{{formatPrice(bothTotals)}}</span>
+                <span>HannahとPerryの記入分:</span
+                ><span class="singlePrice">{{ formatPrice(bothTotals) }}</span>
               </div>
             </div>
             <div class="boxTotal">
               <div class="boxDescription">
-                <span>二人で払う分:</span><span class="singlePrice">{{formatPrice(allTotal)}}</span>
+                <span>二人で払う分:</span
+                ><span class="singlePrice">{{ formatPrice(allTotal) }}</span>
               </div>
             </div>
           </div>
           <div class="finalTotalInfo">
-            <span class="totalText">合計:<span class="grandTotal">{{ formatPrice(initalTotal) }}</span></span><button>合計編集</button>
+            <span class="totalText"
+              >合計:<span class="grandTotal">{{
+                formatPrice(initalTotal)
+              }}</span></span
+            ><button>合計編集</button>
           </div>
           <div class="finalTotalInfo">
-            <span class="totalText">合計(割引含め):<span class="grandTotal">{{ formatPrice(discountedTotal) }}</span></span>
+            <span class="totalText"
+              >合計(割引含め):<span class="grandTotal">{{
+                formatPrice(discountedTotal)
+              }}</span></span
+            >
           </div>
         </div>
-        <div class="priceTable">
+        <div
+          v-if="perryData.items.length || hannahData.items.length"
+          class="priceTable"
+        >
           <table class="theActualPriceTable">
             <tbody>
               <tr class="tableRow">
@@ -98,20 +204,54 @@
                 <th>Price</th>
               </tr>
               <!-- TODO: 重複なコードをなくす方法は検討必須 -->
-              <tr v-for="data in hannahData.items" class="tableRow tableRow__person1">
+              <tr
+                v-for="(data, index) in hannahData.items"
+                class="tableRow tableRow__person1"
+              >
                 <td>{{ data.productName }}</td>
                 <td>{{ formatPrice(data.price) }}</td>
                 <td>
-                  <button @click="handleEditItem(data)" class="editButton">Edit</button>
-                  <button @click="handleDeleteItem(data)" class="deleteButton">Delete</button>
+                  <button
+                    @click="(event) => handleOpenEditModal(event, data)"
+                    :data-index="index"
+                    data-user-type="hannah"
+                    class="editButton"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    @click="(event) => handleOpenDeleteModal(event, data)"
+                    :data-index="index"
+                    data-user-type="hannah"
+                    class="deleteButton"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
-              <tr v-for="data in perryData.items" class="tableRow tableRow__person2">
+              <tr
+                v-for="(data, index) in perryData.items"
+                class="tableRow tableRow__person2"
+              >
                 <td>{{ data.productName }}</td>
                 <td>{{ formatPrice(data.price) }}</td>
                 <td>
-                  <button @click="handleEditItem(data)" class="editButton">Edit</button>
-                  <button @click="handleDeleteItem(data)" class="deleteButton">Delete</button>
+                  <button
+                    @click="(event) => handleOpenEditModal(event, data)"
+                    :data-index="index"
+                    data-user-type="perry"
+                    class="editButton"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    @click="(event) => handleOpenDeleteModal(event, data)"
+                    :data-index="index"
+                    data-user-type="perry"
+                    class="deleteButton"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -125,12 +265,12 @@
 import Title from '@/components/atoms/Title.vue'
 
 interface ItemData {
-  productName: string;
-  price: number;
+  productName: string
+  price: number
 }
 interface ShoppingData {
-  name: string;
-  items: ItemData[];
+  name: string
+  items: ItemData[]
 }
 const USERS = {
   PERRY: {
@@ -141,115 +281,174 @@ const USERS = {
     DISPLAY_NAME: 'Hannah',
     NAME: 'hannah'
   }
-} as const;
+} as const
 const ENTER_KEY = 13
 const initalTotal = ref(0)
 const discountTotal = ref(0)
-const totalBoxRef = ref()
-const discountBoxRef = ref()
-const productNameRef = ref()
-const productName = ref()
-const priceRef = ref()
 const price = ref()
 const isNextPage = ref(false)
 const errorList = ref<string[]>([])
-// TODO: 分かりにくい変数名になってる、、
+const editProductName = ref()
+const editPrice = ref()
+const isOpenEditModal = ref(false)
+const isOpenDeleteModal = ref(false)
+const indexToEdit = ref<number>()
+const userToEdit = ref<string>()
+const userToDelete = ref<string>()
+const indexToDelete = ref<number>()
+const priceToDelete = ref()
+const nameToDelete = ref()
+const productName = ref()
+const totalBoxRef = ref()
+const discountBoxRef = ref()
+const productNameRef = ref()
+const priceRef = ref()
+const editProductNameRef = ref()
+const editPriceRef = ref()
 const selectedPerson = ref<string>(USERS.HANNAH.NAME)
 const perryData = ref<ShoppingData>({
   name: USERS.PERRY.DISPLAY_NAME,
   items: []
-}) 
+})
 const hannahData = ref<ShoppingData>({
   name: USERS.HANNAH.DISPLAY_NAME,
   items: []
-}) 
+})
 
 const productNameEnterKey = () => {
-  console.log('productNameEnterKey');
   priceRef.value.focus()
 }
 
 // TODO: anyをなくす
 const priceEnterKey = () => {
-  console.log('priceEnterKey');
-  handleAddItem();
+  handleAddItem()
   productNameRef.value.focus()
-} 
+}
+
+const editProductNameEnterKey = () => {
+  editPriceRef.value.focus()
+}
+
+const editPriceEnterKey = () => {
+  handleEditItem()
+  editProductNameRef.value.focus()
+}
+
+const handleClickBlackOverlay = () => {
+  closeModal()
+}
+
+const closeModal = () => {
+  isOpenEditModal.value = false
+  isOpenDeleteModal.value = false
+  editProductName.value = ''
+  editPrice.value = 0
+}
 
 const getPersonalTotal = (data: ShoppingData) => {
-  console.log('getPersonalTotal: data: ', data);
-  let total = 0;
+  let total = 0
   data.items.forEach((item) => {
-    total += item.price;
-  });
-  return total;
-};
-
-// TODO: anyをなくす
-const handleEditItem = (data: any) => {
-  console.log('handleEditItem: data: ', data);
-  // TODO: 挙動
-}
-// TODO: anyをなくす
-const handleDeleteItem = (data: any) => {
-  console.log('handleDeleteItem: data: ', data);
-  // TODO: 挙動
+    total += item.price
+  })
+  return total
 }
 
-const totalPay = computed(() => {
-  return {
-    perry: getPersonalTotal(perryData.value),
-    hannah: getPersonalTotal(hannahData.value)
+// TODO: anyをなくす
+const handleOpenEditModal = (event: any, data: any) => {
+  indexToEdit.value = Number(event.target.dataset.index)
+  userToEdit.value = event.target.dataset.userType
+  editProductName.value = data.productName
+  editPrice.value = data.price
+  isOpenEditModal.value = true
+}
+const handleOpenDeleteModal = (event: any, data: any) => {
+  indexToDelete.value = Number(event.target.dataset.index)
+  userToDelete.value = event.target.dataset.userType
+  // TODO: 重複コードを改善しよう！
+  if (userToDelete.value === 'hannah') {
+    priceToDelete.value =
+      hannahData.value.items[Number(event.target.dataset.index)].price
+    nameToDelete.value =
+      hannahData.value.items[Number(event.target.dataset.index)].productName
+  } else {
+    priceToDelete.value =
+      perryData.value.items[Number(event.target.dataset.index)].price
+    nameToDelete.value =
+      perryData.value.items[Number(event.target.dataset.index)].productName
   }
-});
-const bothTotals = computed(() => totalPay.value.perry + totalPay.value.hannah)
-const discountedTotal = computed(() => initalTotal.value - discountTotal.value)
-const allTotal = computed(() => discountedTotal.value - bothTotals.value)
-const ourIndividualSplit = computed(() => allTotal.value / 2)
-const hannahPay = computed(() => Math.floor(totalPay.value.hannah + ourIndividualSplit.value))
-const perryPay = computed(() => discountedTotal.value - hannahPay.value
-)
-const formatPrice = (price: number) => {
-  return `${price.toLocaleString("en-US")}円`
+
+  isOpenDeleteModal.value = true
 }
 
+const handleEditItem = () => {
+  const editMeTodo = indexToEdit.value ? indexToEdit.value : 0
+  if (userToEdit.value === 'perry') {
+    perryData.value.items[editMeTodo].productName = editProductName.value
+    perryData.value.items[editMeTodo].price = editPrice.value
+  } else {
+    // TODO: number | undefinedから numberに変換する方法は検討必須
+    hannahData.value.items[editMeTodo].productName = editProductName.value
+    hannahData.value.items[editMeTodo].price = editPrice.value
+  }
+  closeModal()
+}
+
+const handleDeleteItem = () => {
+  const indexDelete: number = indexToDelete.value ? indexToDelete.value : 0
+  // TODO: ここも重複コード、、、
+  if (userToEdit.value === 'perry') {
+    perryData.value.items.splice(indexDelete, 1)
+  } else {
+    hannahData.value.items.splice(indexDelete, 1)
+  }
+  closeModal()
+}
+// method
 const isStepOneValid = () => {
-  const isDiscountPriceHigherThanTotalCost = discountTotal.value > initalTotal.value
+  const isDiscountPriceHigherThanTotalCost =
+    discountTotal.value > initalTotal.value
   const isInitialTotalEmpty = initalTotal.value === 0
-  const isDiscountOrTotalCostNegative = initalTotal.value < 0 || discountTotal.value < 0
+  const isDiscountOrTotalCostNegative =
+    initalTotal.value < 0 || discountTotal.value < 0
 
   if (isDiscountPriceHigherThanTotalCost) {
-    errorList.value.push('割引は会計より高い値段になってしまいましたので再記入してください');
+    errorList.value.push(
+      '割引は会計より高い値段になってしまいましたので再記入してください'
+    )
   }
   if (isInitialTotalEmpty) {
-    errorList.value.push('会計は空');
+    errorList.value.push('会計は空')
   }
   if (isDiscountOrTotalCostNegative) {
-    errorList.value.push('会計または割引はnegative数字になってる');
+    errorList.value.push('会計または割引はnegative数字になってる')
   }
-  return !isDiscountPriceHigherThanTotalCost && !isInitialTotalEmpty && !isDiscountOrTotalCostNegative
+  return (
+    !isDiscountPriceHigherThanTotalCost &&
+    !isInitialTotalEmpty &&
+    !isDiscountOrTotalCostNegative
+  )
 }
 
+// handle click
 const handleClickForStepOne = () => {
-  if(!isStepOneValid()) {
-    return;
+  if (!isStepOneValid()) {
+    return
   }
   isNextPage.value = true
 }
-const radioClick = () => {
+const handleRadioClick = () => {
   productNameRef.value.focus()
 }
 const handleAddItem = () => {
-  console.log('handleAddItem')
-  const isProductNameError = false;
-  const isPrice = false;
+  const isProductNameError = false
+  const isPrice = false
   if (isProductNameError) {
     // TODO: add error message for product name
-    return;
+    return
   }
   if (isPrice) {
     // TODO: add error message for product name
-    return;
+    return
   }
   const newItem: ItemData = {
     productName: productName.value,
@@ -261,21 +460,43 @@ const handleAddItem = () => {
   if (selectedPerson.value === USERS.PERRY.NAME) {
     perryData.value.items.push(newItem)
   }
-  productName.value = ""
-  price.value = ""
+  productName.value = ''
+  price.value = ''
 }
 
+const handleModalCancel = () => {
+  isOpenDeleteModal.value = false
+}
+
+// computed
+const totalPay = computed(() => {
+  return {
+    perry: getPersonalTotal(perryData.value),
+    hannah: getPersonalTotal(hannahData.value)
+  }
+})
+const bothTotals = computed(() => totalPay.value.perry + totalPay.value.hannah)
+const discountedTotal = computed(() => initalTotal.value - discountTotal.value)
+const allTotal = computed(() => discountedTotal.value - bothTotals.value)
+const ourIndividualSplit = computed(() => allTotal.value / 2)
+const hannahPay = computed(() =>
+  Math.floor(totalPay.value.hannah + ourIndividualSplit.value)
+)
+const perryPay = computed(() => discountedTotal.value - hannahPay.value)
+const formatPrice = (price: number) => {
+  return `${price.toLocaleString('en-US')}円`
+}
 onMounted(() => {
-  window.onbeforeunload = function() {
-    return '';
-  };
+  window.onbeforeunload = function () {
+    return ''
+  }
   // TODO: keyupだとvue3のやり方ありそうなので確認必須
   // TODO: 重複なコードをなくす
   // TODO: anyをなくす
   totalBoxRef.value?.addEventListener('keyup', (event: any) => {
     if (event.keyCode === ENTER_KEY) {
       console.log('enter was pressed')
-      discountBoxRef.value.focus();
+      discountBoxRef.value.focus()
     }
   })
   discountBoxRef.value?.addEventListener('keyup', (event: any) => {
@@ -287,7 +508,7 @@ onMounted(() => {
   productNameRef.value?.addEventListener('keyup', (event: any) => {
     if (event.keyCode === ENTER_KEY) {
       console.log('enter was pressed')
-      priceRef.value.focus();
+      priceRef.value.focus()
     }
   })
   priceRef.value?.addEventListener('keyup', (event: any) => {
@@ -296,12 +517,11 @@ onMounted(() => {
       handleAddItem()
     }
   })
-});
-
+})
 </script>
 <style lang="scss" scoped>
-$personOne: #F4CCCC;
-$personTwo: #9FC5E8;
+$personOne: #f4cccc;
+$personTwo: #9fc5e8;
 
 * {
   box-sizing: border-box;
@@ -329,20 +549,21 @@ $personTwo: #9FC5E8;
   display: table;
   border-collapse: collapse;
   width: 100%;
-  
+
   .tableRow {
     border-bottom: 1px solid #ddd;
-    
+
     &__person1 {
       background: $personOne;
     }
-  
+
     &__person2 {
       background: $personTwo;
     }
   }
 
-  th, td {
+  th,
+  td {
     text-align: left;
     padding: 8px;
   }
@@ -400,9 +621,9 @@ $personTwo: #9FC5E8;
   width: 20px;
 }
 
-.radioItem{
+.radioItem {
   display: flex;
-    align-items: center;
+  align-items: center;
 }
 
 .menuItem {
@@ -419,7 +640,7 @@ $personTwo: #9FC5E8;
 }
 .contents {
   padding: 0 15px;
-  border-bottom: 1px solid #D9D9D9;
+  border-bottom: 1px solid #d9d9d9;
   padding-bottom: 15px;
   margin-bottom: 15px;
 }
@@ -438,10 +659,30 @@ $personTwo: #9FC5E8;
   margin-left: 5px;
 }
 
-.editButton {
-
-}
 .deleteButton {
   margin-left: 10px;
+}
+
+.blackModal {
+  height: 100vh;
+  background: black;
+  width: 100%;
+  position: fixed;
+  z-index: 100;
+  opacity: 0.7;
+}
+
+.modalBox {
+  position: fixed;
+  background: white;
+  width: 85%;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 1;
+  z-index: 200;
+  height: 80vh;
+  padding: 40px;
 }
 </style>
