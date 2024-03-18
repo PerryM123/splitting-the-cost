@@ -6,6 +6,7 @@
     "build": "nuxt build",
     "dev": "nuxt prepare && nuxt dev",
     "dev:ssl": "nuxt prepare && nuxt dev --https --ssl-cert ./localhost.pem --ssl-key ./localhost-key.pem",
+    "dev:host": "yarn dev --host",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
