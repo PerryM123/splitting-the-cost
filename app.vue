@@ -1,15 +1,12 @@
-<!-- TODO: stylelintとprettierを追加 -->
-<!-- TODO: prettier: trailingComma, singleQuote, endOfFile -->
 <!-- TODO: localStorageでデータを保存？cookie？ -->
 <!-- TODO: エラーハンドリング必須 -->
-<!-- TODO: anyをなくす -->
 <template>
   <div class="c-app">
     <div v-if="isOpenEditModal || isOpenDeleteModal" class="modal">
       <div @click="handleClickBlackOverlay" class="blackModal"></div>
       <div v-if="isOpenEditModal" class="modalBox">
         <div>
-          <h2 style="text-align: center">編集</h2>
+          <h2 class="modalTitle">編集</h2>
           <div class="menuItem">
             <p class="menuTitle">Product Name</p>
             <input
@@ -31,23 +28,28 @@
             />
           </div>
           <div class="butonArea">
-            <button @click="handleEditItem">Add Item</button>
+            <button @click="handleModalCancel">キャンセル</button>
+            <button class="modalActionButton" @click="handleEditItem">
+              編集
+            </button>
           </div>
         </div>
       </div>
       <div v-if="isOpenDeleteModal" class="modalBox">
         <div>
-          <h2 style="text-align: center">削除</h2>
+          <h2 class="modalTitle">削除</h2>
           <div class="menuItem">
-            上記を削除しますか？
             <p class="menuTitle">Product Name</p>
             <span>{{ nameToDelete }}</span>
             <p class="menuTitle" style="margin-top: 10px">Price</p>
             <span>{{ formatPrice(priceToDelete) }}</span>
+            <p>上記を削除しますか？</p>
           </div>
           <div class="butonArea">
-            <button @click="handleDeleteItem">削除</button>
             <button @click="handleModalCancel">キャンセル</button>
+            <button class="modalActionButton" @click="handleDeleteItem">
+              削除
+            </button>
           </div>
         </div>
       </div>
@@ -220,7 +222,7 @@
                     Edit
                   </button>
                   <button
-                    @click="(event) => handleOpenDeleteModal(event, data)"
+                    @click="(event) => handleOpenDeleteModal(event)"
                     :data-index="index"
                     data-user-type="hannah"
                     class="deleteButton"
@@ -245,7 +247,7 @@
                     Edit
                   </button>
                   <button
-                    @click="(event) => handleOpenDeleteModal(event, data)"
+                    @click="(event) => handleOpenDeleteModal(event)"
                     :data-index="index"
                     data-user-type="perry"
                     class="deleteButton"
@@ -282,7 +284,7 @@ const USERS = {
     NAME: 'hannah'
   }
 } as const
-const ENTER_KEY = 13
+const ENTER_KEY = 'Enter'
 const initalTotal = ref(0)
 const discountTotal = ref(0)
 const price = ref()
@@ -315,11 +317,12 @@ const hannahData = ref<ShoppingData>({
   items: []
 })
 
+// method
+
 const productNameEnterKey = () => {
   priceRef.value.focus()
 }
 
-// TODO: anyをなくす
 const priceEnterKey = () => {
   handleAddItem()
   productNameRef.value.focus()
@@ -332,10 +335,6 @@ const editProductNameEnterKey = () => {
 const editPriceEnterKey = () => {
   handleEditItem()
   editProductNameRef.value.focus()
-}
-
-const handleClickBlackOverlay = () => {
-  closeModal()
 }
 
 const closeModal = () => {
@@ -353,57 +352,6 @@ const getPersonalTotal = (data: ShoppingData) => {
   return total
 }
 
-// TODO: anyをなくす
-const handleOpenEditModal = (event: any, data: any) => {
-  indexToEdit.value = Number(event.target.dataset.index)
-  userToEdit.value = event.target.dataset.userType
-  editProductName.value = data.productName
-  editPrice.value = data.price
-  isOpenEditModal.value = true
-}
-const handleOpenDeleteModal = (event: any, data: any) => {
-  indexToDelete.value = Number(event.target.dataset.index)
-  userToDelete.value = event.target.dataset.userType
-  // TODO: 重複コードを改善しよう！
-  if (userToDelete.value === 'hannah') {
-    priceToDelete.value =
-      hannahData.value.items[Number(event.target.dataset.index)].price
-    nameToDelete.value =
-      hannahData.value.items[Number(event.target.dataset.index)].productName
-  } else {
-    priceToDelete.value =
-      perryData.value.items[Number(event.target.dataset.index)].price
-    nameToDelete.value =
-      perryData.value.items[Number(event.target.dataset.index)].productName
-  }
-
-  isOpenDeleteModal.value = true
-}
-
-const handleEditItem = () => {
-  const editMeTodo = indexToEdit.value ? indexToEdit.value : 0
-  if (userToEdit.value === 'perry') {
-    perryData.value.items[editMeTodo].productName = editProductName.value
-    perryData.value.items[editMeTodo].price = editPrice.value
-  } else {
-    // TODO: number | undefinedから numberに変換する方法は検討必須
-    hannahData.value.items[editMeTodo].productName = editProductName.value
-    hannahData.value.items[editMeTodo].price = editPrice.value
-  }
-  closeModal()
-}
-
-const handleDeleteItem = () => {
-  const indexDelete: number = indexToDelete.value ? indexToDelete.value : 0
-  // TODO: ここも重複コード、、、
-  if (userToEdit.value === 'perry') {
-    perryData.value.items.splice(indexDelete, 1)
-  } else {
-    hannahData.value.items.splice(indexDelete, 1)
-  }
-  closeModal()
-}
-// method
 const isStepOneValid = () => {
   const isDiscountPriceHigherThanTotalCost =
     discountTotal.value > initalTotal.value
@@ -429,7 +377,7 @@ const isStepOneValid = () => {
   )
 }
 
-// handle click
+// event
 const handleClickForStepOne = () => {
   if (!isStepOneValid()) {
     return
@@ -465,7 +413,59 @@ const handleAddItem = () => {
 }
 
 const handleModalCancel = () => {
+  isOpenEditModal.value = false
   isOpenDeleteModal.value = false
+}
+
+const handleClickBlackOverlay = () => {
+  closeModal()
+}
+
+const handleOpenEditModal = (event: MouseEvent, data: ItemData) => {
+  const target = event.target as HTMLInputElement
+  indexToEdit.value = Number(target.dataset.index)
+  userToEdit.value = target.dataset.userType
+  editProductName.value = data.productName
+  editPrice.value = data.price
+  isOpenEditModal.value = true
+}
+const handleOpenDeleteModal = (event: MouseEvent) => {
+  const target = event.target as HTMLInputElement
+  const selectedIndex = Number(target.dataset.index)
+  indexToDelete.value = selectedIndex
+  userToDelete.value = target.dataset.userType
+  // TODO: 重複コードを改善しよう！
+  if (userToDelete.value === USERS.HANNAH.NAME) {
+    priceToDelete.value = hannahData.value.items[selectedIndex].price
+    nameToDelete.value = hannahData.value.items[selectedIndex].productName
+  } else {
+    priceToDelete.value = perryData.value.items[selectedIndex].price
+    nameToDelete.value = perryData.value.items[selectedIndex].productName
+  }
+  isOpenDeleteModal.value = true
+}
+
+const handleEditItem = () => {
+  const editMeTodo = indexToEdit.value ? indexToEdit.value : 0
+  if (userToEdit.value === USERS.PERRY.NAME) {
+    perryData.value.items[editMeTodo].productName = editProductName.value
+    perryData.value.items[editMeTodo].price = editPrice.value
+  } else {
+    hannahData.value.items[editMeTodo].productName = editProductName.value
+    hannahData.value.items[editMeTodo].price = editPrice.value
+  }
+  closeModal()
+}
+
+const handleDeleteItem = () => {
+  const indexDelete: number = indexToDelete.value ? indexToDelete.value : 0
+  // TODO: ここも重複コード、、、
+  if (userToDelete.value === USERS.PERRY.NAME) {
+    perryData.value.items.splice(indexDelete, 1)
+  } else {
+    hannahData.value.items.splice(indexDelete, 1)
+  }
+  closeModal()
 }
 
 // computed
@@ -491,29 +491,23 @@ onMounted(() => {
     return ''
   }
   // TODO: keyupだとvue3のやり方ありそうなので確認必須
-  // TODO: 重複なコードをなくす
-  // TODO: anyをなくす
-  totalBoxRef.value?.addEventListener('keyup', (event: any) => {
-    if (event.keyCode === ENTER_KEY) {
-      console.log('enter was pressed')
+  totalBoxRef.value?.addEventListener('keyup', (event: KeyboardEvent) => {
+    if (event.key === ENTER_KEY) {
       discountBoxRef.value.focus()
     }
   })
-  discountBoxRef.value?.addEventListener('keyup', (event: any) => {
-    if (event.keyCode === ENTER_KEY) {
-      console.log('enter was pressed')
+  discountBoxRef.value?.addEventListener('keyup', (event: KeyboardEvent) => {
+    if (event.key === ENTER_KEY) {
       handleClickForStepOne()
     }
   })
-  productNameRef.value?.addEventListener('keyup', (event: any) => {
-    if (event.keyCode === ENTER_KEY) {
-      console.log('enter was pressed')
+  productNameRef.value?.addEventListener('keyup', (event: KeyboardEvent) => {
+    if (event.key === ENTER_KEY) {
       priceRef.value.focus()
     }
   })
-  priceRef.value?.addEventListener('keyup', (event: any) => {
-    if (event.keyCode === ENTER_KEY) {
-      console.log('enter was pressed')
+  priceRef.value?.addEventListener('keyup', (event: KeyboardEvent) => {
+    if (event.key === ENTER_KEY) {
       handleAddItem()
     }
   })
@@ -576,6 +570,10 @@ $personTwo: #9fc5e8;
 .butonArea {
   margin-top: 10px;
   text-align: right;
+}
+
+.modalActionButton {
+  margin-left: 15px;
 }
 
 .box {
@@ -682,7 +680,12 @@ $personTwo: #9fc5e8;
   transform: translate(-50%, -50%);
   opacity: 1;
   z-index: 200;
-  height: 80vh;
-  padding: 40px;
+  max-height: 100vh;
+  padding: 20px;
+
+  .modalTitle {
+    text-align: center;
+    margin: 0;
+  }
 }
 </style>
