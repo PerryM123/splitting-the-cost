@@ -67,6 +67,7 @@
           <input
             class="inputBox"
             ref="totalBoxRef"
+            @keydown.enter="grandTotalEnterKey"
             v-model="initalTotal"
             min="0"
             oninput="this.value = Math.abs(this.value)"
@@ -78,6 +79,7 @@
           <input
             class="inputBox"
             ref="discountBoxRef"
+            @keydown.enter="discountEnterKey"
             v-model="discountTotal"
             min="0"
             oninput="this.value = Math.abs(this.value)"
@@ -185,7 +187,7 @@
               >合計:<span class="grandTotal">{{
                 formatPrice(initalTotal)
               }}</span></span
-            ><button>合計編集</button>
+            ><button @click="editGrandTotal">合計編集</button>
           </div>
           <div class="finalTotalInfo">
             <span class="totalText"
@@ -318,6 +320,13 @@ const hannahData = ref<ShoppingData>({
 })
 
 // method
+const grandTotalEnterKey = () => {
+  discountBoxRef.value.focus()
+}
+
+const discountEnterKey = () => {
+  handleClickForStepOne()
+}
 
 const productNameEnterKey = () => {
   priceRef.value.focus()
@@ -421,6 +430,10 @@ const handleClickBlackOverlay = () => {
   closeModal()
 }
 
+const editGrandTotal = () => {
+  isNextPage.value = false
+}
+
 const handleOpenEditModal = (event: MouseEvent, data: ItemData) => {
   const target = event.target as HTMLInputElement
   indexToEdit.value = Number(target.dataset.index)
@@ -490,27 +503,6 @@ onMounted(() => {
   window.onbeforeunload = function () {
     return ''
   }
-  // TODO: keyupだとvue3のやり方ありそうなので確認必須
-  totalBoxRef.value?.addEventListener('keyup', (event: KeyboardEvent) => {
-    if (event.key === ENTER_KEY) {
-      discountBoxRef.value.focus()
-    }
-  })
-  discountBoxRef.value?.addEventListener('keyup', (event: KeyboardEvent) => {
-    if (event.key === ENTER_KEY) {
-      handleClickForStepOne()
-    }
-  })
-  productNameRef.value?.addEventListener('keyup', (event: KeyboardEvent) => {
-    if (event.key === ENTER_KEY) {
-      priceRef.value.focus()
-    }
-  })
-  priceRef.value?.addEventListener('keyup', (event: KeyboardEvent) => {
-    if (event.key === ENTER_KEY) {
-      handleAddItem()
-    }
-  })
 })
 </script>
 <style lang="scss" scoped>
