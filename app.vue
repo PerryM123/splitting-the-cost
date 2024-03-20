@@ -217,8 +217,6 @@
                   :class="`tableRow__person${personIndex}`"
                   :key="itemIndex"
                 >
-                  <p>personIndex: {{ personIndex }}</p>
-                  <p>itemIndex: {{ itemIndex }}</p>
                   <td>{{ item.productName }}</td>
                   <td>{{ formatPrice(item.price) }}</td>
                   <td>
@@ -250,16 +248,10 @@
 </template>
 <script lang="ts" setup>
 import Title from '@/components/atoms/Title.vue'
+import { computed, onMounted, ref } from 'vue'
+import type { ItemData, ShoppingData } from './interface/Shopping'
+import { getPersonalTotal } from './utils/utils'
 
-interface ItemData {
-  productName: string
-  price: number
-}
-interface ShoppingData {
-  name: string
-  displayName: string
-  items: ItemData[]
-}
 const USERS = {
   PERRY: {
     DISPLAY_NAME: 'Perry',
@@ -336,14 +328,6 @@ const closeModal = () => {
   isOpenDeleteModal.value = false
   editProductName.value = ''
   editPrice.value = 0
-}
-
-const getPersonalTotal = (data: ShoppingData) => {
-  let total = 0
-  data.items.forEach((item) => {
-    total += item.price
-  })
-  return total
 }
 
 const isStepOneValid = () => {
@@ -449,6 +433,17 @@ const handleDeleteItem = () => {
 }
 
 // computed
+/*
+以下の関数をjestで単体テストを作成できるように修正
+- totalPay
+- bothTotals
+- discountedTotal
+- allTotal
+- ourIndividualSplit
+- hannahPay
+- perryPay
+- formatPrice
+ */
 const totalPay = computed(() => {
   return {
     perry: getPersonalTotal(perryData.value),
