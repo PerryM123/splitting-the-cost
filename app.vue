@@ -208,57 +208,39 @@
                 <th>Name</th>
                 <th>Price</th>
               </tr>
-              <!-- TODO: 重複なコードをなくす方法は検討必須 -->
-              <tr
-                v-for="(data, index) in hannahData.items"
-                class="tableRow tableRow__person1"
+              <template
+                v-for="(person, personIndex) in [hannahData, perryData]"
               >
-                <td>{{ data.productName }}</td>
-                <td>{{ formatPrice(data.price) }}</td>
-                <td>
-                  <button
-                    @click="(event) => handleOpenEditModal(event, data)"
-                    :data-index="index"
-                    data-user-type="hannah"
-                    class="editButton"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    @click="(event) => handleOpenDeleteModal(event)"
-                    :data-index="index"
-                    data-user-type="hannah"
-                    class="deleteButton"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-              <tr
-                v-for="(data, index) in perryData.items"
-                class="tableRow tableRow__person2"
-              >
-                <td>{{ data.productName }}</td>
-                <td>{{ formatPrice(data.price) }}</td>
-                <td>
-                  <button
-                    @click="(event) => handleOpenEditModal(event, data)"
-                    :data-index="index"
-                    data-user-type="perry"
-                    class="editButton"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    @click="(event) => handleOpenDeleteModal(event)"
-                    :data-index="index"
-                    data-user-type="perry"
-                    class="deleteButton"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
+                <tr
+                  v-for="(item, itemIndex) in person.items"
+                  class="tableRow"
+                  :class="`tableRow__person${personIndex}`"
+                  :key="itemIndex"
+                >
+                  <p>personIndex: {{ personIndex }}</p>
+                  <p>itemIndex: {{ itemIndex }}</p>
+                  <td>{{ item.productName }}</td>
+                  <td>{{ formatPrice(item.price) }}</td>
+                  <td>
+                    <button
+                      @click="(event) => handleOpenEditModal(event, item)"
+                      :data-index="itemIndex"
+                      :data-user-type="person.name"
+                      class="editButton"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      @click="(event) => handleOpenDeleteModal(event)"
+                      :data-index="itemIndex"
+                      :data-user-type="person.name"
+                      class="deleteButton"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
         </div>
@@ -275,6 +257,7 @@ interface ItemData {
 }
 interface ShoppingData {
   name: string
+  displayName: string
   items: ItemData[]
 }
 const USERS = {
@@ -296,7 +279,7 @@ const editProductName = ref()
 const editPrice = ref()
 const isOpenEditModal = ref(false)
 const isOpenDeleteModal = ref(false)
-const indexToEdit = ref<number>()
+const indexToEdit = ref<number>(0)
 const userToEdit = ref<string>()
 const userToDelete = ref<string>()
 const indexToDelete = ref<number>()
@@ -311,11 +294,13 @@ const editProductNameRef = ref()
 const editPriceRef = ref()
 const selectedPerson = ref<string>(USERS.HANNAH.NAME)
 const perryData = ref<ShoppingData>({
-  name: USERS.PERRY.DISPLAY_NAME,
+  displayName: USERS.PERRY.DISPLAY_NAME,
+  name: USERS.PERRY.NAME,
   items: []
 })
 const hannahData = ref<ShoppingData>({
-  name: USERS.HANNAH.DISPLAY_NAME,
+  displayName: USERS.HANNAH.DISPLAY_NAME,
+  name: USERS.HANNAH.NAME,
   items: []
 })
 
@@ -447,14 +432,11 @@ const handleOpenDeleteModal = (event: MouseEvent) => {
 }
 
 const handleEditItem = () => {
-  const editMeTodo = indexToEdit.value ? indexToEdit.value : 0
-  if (userToEdit.value === USERS.PERRY.NAME) {
-    perryData.value.items[editMeTodo].productName = editProductName.value
-    perryData.value.items[editMeTodo].price = editPrice.value
-  } else {
-    hannahData.value.items[editMeTodo].productName = editProductName.value
-    hannahData.value.items[editMeTodo].price = editPrice.value
-  }
+  const index = indexToEdit.value
+  const dataToChange =
+    userToEdit.value === USERS.PERRY.NAME ? perryData.value : hannahData.value
+  dataToChange.items[index].productName = editProductName.value
+  dataToChange.items[index].price = editPrice.value
   closeModal()
 }
 
@@ -524,11 +506,11 @@ $personTwo: #9fc5e8;
   .tableRow {
     border-bottom: 1px solid #ddd;
 
-    &__person1 {
+    &__person0 {
       background: $personOne;
     }
 
-    &__person2 {
+    &__person1 {
       background: $personTwo;
     }
   }
