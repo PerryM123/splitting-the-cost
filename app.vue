@@ -1,5 +1,4 @@
 <!-- TODO: localStorageでデータを保存？cookie？ -->
-<!-- TODO: エラーハンドリング必須 -->
 <template>
   <div class="c-app">
     <div v-if="isOpenEditModal || isOpenDeleteModal" class="modal">
@@ -25,6 +24,7 @@
               ref="editPriceRef"
               v-model="editPrice"
               type="number"
+              min="0"
             />
           </div>
           <div class="butonArea">
@@ -139,6 +139,7 @@
               ref="priceRef"
               v-model="price"
               type="number"
+              min="0"
             />
           </div>
           <div class="butonArea">
@@ -286,10 +287,9 @@ const USERS = {
     NAME: 'hannah'
   }
 } as const
-const ENTER_KEY = 'Enter'
 const initalTotal = ref(0)
 const discountTotal = ref(0)
-const price = ref()
+const price = ref<number>(0)
 const isNextPage = ref(false)
 const errorList = ref<string[]>([])
 const editProductName = ref()
@@ -302,7 +302,7 @@ const userToDelete = ref<string>()
 const indexToDelete = ref<number>()
 const priceToDelete = ref()
 const nameToDelete = ref()
-const productName = ref()
+const productName = ref<string>('')
 const totalBoxRef = ref()
 const discountBoxRef = ref()
 const productNameRef = ref()
@@ -397,16 +397,6 @@ const handleRadioClick = () => {
   productNameRef.value.focus()
 }
 const handleAddItem = () => {
-  const isProductNameError = false
-  const isPrice = false
-  if (isProductNameError) {
-    // TODO: add error message for product name
-    return
-  }
-  if (isPrice) {
-    // TODO: add error message for product name
-    return
-  }
   const newItem: ItemData = {
     productName: productName.value,
     price: price.value
@@ -418,7 +408,7 @@ const handleAddItem = () => {
     perryData.value.items.push(newItem)
   }
   productName.value = ''
-  price.value = ''
+  price.value = 0
 }
 
 const handleModalCancel = () => {
