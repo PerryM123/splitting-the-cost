@@ -437,14 +437,12 @@ const handleOpenDeleteModal = (event: MouseEvent) => {
   const selectedIndex = Number(target.dataset.index)
   indexToDelete.value = selectedIndex
   userToDelete.value = target.dataset.userType
-  // TODO: 重複コードを改善しよう！
-  if (userToDelete.value === USERS.HANNAH.NAME) {
-    priceToDelete.value = hannahData.value.items[selectedIndex].price
-    nameToDelete.value = hannahData.value.items[selectedIndex].productName
-  } else {
-    priceToDelete.value = perryData.value.items[selectedIndex].price
-    nameToDelete.value = perryData.value.items[selectedIndex].productName
-  }
+  const dataToChange =
+    userToDelete.value === USERS.HANNAH.NAME
+      ? hannahData.value
+      : perryData.value
+  priceToDelete.value = dataToChange.items[selectedIndex].price
+  nameToDelete.value = dataToChange.items[selectedIndex].productName
   isOpenDeleteModal.value = true
 }
 
@@ -462,12 +460,9 @@ const handleEditItem = () => {
 
 const handleDeleteItem = () => {
   const indexDelete: number = indexToDelete.value ? indexToDelete.value : 0
-  // TODO: ここも重複コード、、、
-  if (userToDelete.value === USERS.PERRY.NAME) {
-    perryData.value.items.splice(indexDelete, 1)
-  } else {
-    hannahData.value.items.splice(indexDelete, 1)
-  }
+  const dataToChange =
+    userToDelete.value === USERS.PERRY.NAME ? perryData.value : hannahData.value
+  dataToChange.items.splice(indexDelete, 1)
   closeModal()
 }
 
