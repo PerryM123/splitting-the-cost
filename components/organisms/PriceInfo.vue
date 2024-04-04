@@ -5,47 +5,47 @@
       <div class="box box__person1"></div>
       <div class="boxDescription">
         <span>{{ USERS.HANNAH.DISPLAY_NAME }}:</span
-        ><span class="singlePrice">{{ formatPrice(hannahPay) }}</span>
+        ><span class="singlePrice">{{ formatPrice(props.hannahPay) }}</span>
       </div>
     </div>
     <div class="boxTotal">
       <div class="box box__person2"></div>
       <div class="boxDescription">
         <span>{{ USERS.PERRY.DISPLAY_NAME }}</span
-        ><span class="singlePrice">{{ formatPrice(perryPay) }}</span>
+        ><span class="singlePrice">{{ formatPrice(props.perryPay) }}</span>
       </div>
     </div>
     <div class="boxTotal">
-      <div v-if="discountTotal" class="boxDescription">
+      <div v-if="props.discountTotal" class="boxDescription">
         <span>割引:</span
         ><span class="singlePrice">{{
-          discountTotal ? formatPrice(discountTotal) : 0
+          props.discountTotal ? formatPrice(props.discountTotal) : 0
         }}</span>
       </div>
     </div>
     <div class="boxTotal">
       <div class="boxDescription">
         <span>HannahとPerryの記入分:</span
-        ><span class="singlePrice">{{ formatPrice(bothTotals) }}</span>
+        ><span class="singlePrice">{{ formatPrice(props.bothTotals) }}</span>
       </div>
     </div>
     <div class="boxTotal">
       <div class="boxDescription">
         <span>二人で払う分:</span
-        ><span class="singlePrice">{{ formatPrice(allTotal) }}</span>
+        ><span class="singlePrice">{{ formatPrice(props.allTotal) }}</span>
       </div>
     </div>
     <div class="finalTotalInfo">
       <span class="totalText"
         >合計:<span class="grandTotal">{{
-          formatPrice(initalTotal)
+          formatPrice(props.initalTotal)
         }}</span></span
       ><button @click="editGrandTotal">合計編集</button>
     </div>
-    <div v-if="discountTotal" class="finalTotalInfo">
+    <div v-if="props.discountTotal" class="finalTotalInfo">
       <span class="totalText"
         >合計(割引含め):<span class="grandTotal">{{
-          formatPrice(discountedTotal)
+          formatPrice(props.discountedTotal)
         }}</span></span
       >
     </div>
@@ -85,7 +85,7 @@ const props = defineProps({
     required: true
   }
 })
-const emit = defineEmits(['edit-grand-Total'])
+const emit = defineEmits(['edit-grand-total'])
 const editGrandTotal = () => {
   emit('edit-grand-Total')
 }

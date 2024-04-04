@@ -1,41 +1,41 @@
 <!-- TODO: localStorageでデータを保存？cookie？ -->
 <template>
   <div class="c-app">
-    <div v-if="isOpenEditModal || isOpenDeleteModal" class="modal">
-      <div @click="handleClickBlackOverlay" class="blackModal"></div>
-      <div v-if="isOpenEditModal" class="modalBox">
-        <div>
-          <h2 class="modalTitle">編集</h2>
-          <div class="menuItem">
-            <p class="menuTitle">Product Name</p>
-            <input
-              class="inputBox"
-              @keydown.enter="editProductNameEnterKey"
-              ref="editProductNameRef"
-              v-model="editProductName"
-              type="text"
-            />
-          </div>
-          <div class="menuItem">
-            <p class="menuTitle">Price</p>
-            <input
-              class="inputBox"
-              @keydown.enter="editPriceEnterKey"
-              ref="editPriceRef"
-              v-model="editPrice"
-              type="number"
-              min="0"
-            />
-          </div>
-          <div class="butonArea">
-            <button @click="handleModalCancel">キャンセル</button>
-            <button class="modalActionButton" @click="handleEditItem">
-              編集
-            </button>
-          </div>
+    <CommonModal
+      @handle-click-black-overlay="handleClickBlackOverlay"
+      :is-modal-open="isOpenEditModal || isOpenDeleteModal"
+    >
+      <template v-if="isOpenEditModal">
+        <h2 class="modalTitle">編集</h2>
+        <div class="menuItem">
+          <p class="menuTitle">Product Name</p>
+          <input
+            class="inputBox"
+            @keydown.enter="editProductNameEnterKey"
+            ref="editProductNameRef"
+            v-model="editProductName"
+            type="text"
+          />
         </div>
-      </div>
-      <div v-if="isOpenDeleteModal" class="modalBox">
+        <div class="menuItem">
+          <p class="menuTitle">Price</p>
+          <input
+            class="inputBox"
+            @keydown.enter="editPriceEnterKey"
+            ref="editPriceRef"
+            v-model="editPrice"
+            type="number"
+            min="0"
+          />
+        </div>
+        <div class="butonArea">
+          <button @click="handleModalCancel">キャンセル</button>
+          <button class="modalActionButton" @click="handleEditItem">
+            編集
+          </button>
+        </div>
+      </template>
+      <template v-if="isOpenDeleteModal">
         <div>
           <h2 class="modalTitle">削除</h2>
           <div class="menuItem">
@@ -52,8 +52,8 @@
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      </template>
+    </CommonModal>
     <div class="mainContents">
       <div class="mainTitle">
         <Title> Splitting The Cost </Title>
@@ -91,6 +91,7 @@
         </div>
       </div>
       <div v-else>
+        <!-- TODO: contentsもコンポーネント化は必須 -->
         <div class="contents">
           <div class="menuItem">
             <p class="menuTitle">Person</p>
@@ -148,7 +149,7 @@
         </div>
         <!-- TODO: not highlighted like Title??? -->
         <PriceInfo
-          @edit-grand-Total="editGrandTotal"
+          @edit-grand-total="editGrandTotal"
           :hannah-pay="hannahPay"
           :perry-pay="perryPay"
           :discount-total="discountTotal"
