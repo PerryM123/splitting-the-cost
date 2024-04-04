@@ -87,7 +87,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['edit-grand-total'])
 const editGrandTotal = () => {
-  emit('edit-grand-Total')
+  emit('edit-grand-total')
 }
 </script>
 <style lang="scss" scoped>
