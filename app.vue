@@ -146,58 +146,17 @@
             <button @click="handleAddItem">Add Item</button>
           </div>
         </div>
-        <div class="priceInfo contents">
-          <div>
-            <div class="boxTotal">
-              <div class="box box__person1"></div>
-              <div class="boxDescription">
-                <span>{{ USERS.HANNAH.DISPLAY_NAME }}:</span
-                ><span class="singlePrice">{{ formatPrice(hannahPay) }}</span>
-              </div>
-            </div>
-            <div class="boxTotal">
-              <div class="box box__person2"></div>
-              <div class="boxDescription">
-                <span>{{ USERS.PERRY.DISPLAY_NAME }}</span
-                ><span class="singlePrice">{{ formatPrice(perryPay) }}</span>
-              </div>
-            </div>
-            <div class="boxTotal">
-              <div class="boxDescription">
-                <span>割引:</span
-                ><span class="singlePrice">{{
-                  discountTotal ? formatPrice(discountTotal) : 0
-                }}</span>
-              </div>
-            </div>
-            <div class="boxTotal">
-              <div class="boxDescription">
-                <span>HannahとPerryの記入分:</span
-                ><span class="singlePrice">{{ formatPrice(bothTotals) }}</span>
-              </div>
-            </div>
-            <div class="boxTotal">
-              <div class="boxDescription">
-                <span>二人で払う分:</span
-                ><span class="singlePrice">{{ formatPrice(allTotal) }}</span>
-              </div>
-            </div>
-          </div>
-          <div class="finalTotalInfo">
-            <span class="totalText"
-              >合計:<span class="grandTotal">{{
-                formatPrice(initalTotal)
-              }}</span></span
-            ><button @click="editGrandTotal">合計編集</button>
-          </div>
-          <div class="finalTotalInfo">
-            <span class="totalText"
-              >合計(割引含め):<span class="grandTotal">{{
-                formatPrice(discountedTotal)
-              }}</span></span
-            >
-          </div>
-        </div>
+        <!-- TODO: not highlighted like Title??? -->
+        <PriceInfo
+          @edit-grand-Total="editGrandTotal"
+          :hannah-pay="hannahPay"
+          :perry-pay="perryPay"
+          :discount-total="discountTotal"
+          :both-totals="bothTotals"
+          :all-total="allTotal"
+          :inital-total="initalTotal"
+          :discounted-total="discountedTotal"
+        />
         <div
           v-if="perryData.items.length || hannahData.items.length"
           class="priceTable"
@@ -249,19 +208,10 @@
 <script lang="ts" setup>
 import Title from '@/components/atoms/Title.vue'
 import { computed, onMounted, ref } from 'vue'
-import type { ItemData, ShoppingData } from './interface/Shopping'
-import { getPersonalTotal } from './utils/utils'
+import type { ItemData, ShoppingData } from '@/interface/shopping'
+import { getPersonalTotal, formatPrice, getHannahPay } from '@/utils/utils'
+import { USERS } from '@/constants/index'
 
-const USERS = {
-  PERRY: {
-    DISPLAY_NAME: 'Perry',
-    NAME: 'perry'
-  },
-  HANNAH: {
-    DISPLAY_NAME: 'Hannah',
-    NAME: 'hannah'
-  }
-} as const
 const initalTotal = ref(0)
 const discountTotal = ref(0)
 const price = ref<number>(0)
@@ -455,12 +405,9 @@ const discountedTotal = computed(() => initalTotal.value - discountTotal.value)
 const allTotal = computed(() => discountedTotal.value - bothTotals.value)
 const ourIndividualSplit = computed(() => allTotal.value / 2)
 const hannahPay = computed(() =>
-  Math.floor(totalPay.value.hannah + ourIndividualSplit.value)
+  getHannahPay(totalPay.value.hannah, ourIndividualSplit.value)
 )
 const perryPay = computed(() => discountedTotal.value - hannahPay.value)
-const formatPrice = (price: number) => {
-  return `${price.toLocaleString('en-US')}円`
-}
 onMounted(() => {
   window.onbeforeunload = function () {
     return ''
@@ -468,6 +415,7 @@ onMounted(() => {
 })
 </script>
 <style lang="scss" scoped>
+// TODO: color変数は共通化
 $personOne: #f4cccc;
 $personTwo: #9fc5e8;
 
@@ -482,6 +430,10 @@ $personTwo: #9fc5e8;
 
 .mainContents {
   width: 100%;
+}
+
+.contents {
+  padding: 0 15px;
 }
 
 .inputBox {
@@ -516,10 +468,6 @@ $personTwo: #9fc5e8;
     padding: 8px;
   }
 }
-.boxTotal {
-  position: relative;
-  margin-top: 10px;
-}
 
 .butonArea {
   margin-top: 10px;
@@ -529,41 +477,6 @@ $personTwo: #9fc5e8;
 .modalActionButton {
   margin-left: 15px;
 }
-
-.box {
-  height: 25px;
-  width: 25px;
-  border: 1px solid;
-  position: absolute;
-  top: 0px;
-  left: 5px;
-
-  &__person1 {
-    background: $personOne;
-  }
-  &__person2 {
-    background: $personTwo;
-  }
-}
-
-.boxDescription {
-  padding-left: 40px;
-}
-.totalText {
-  font-size: 16px;
-  font-weight: bold;
-}
-.grandTotal {
-  font-size: 30px;
-  font-weight: bold;
-}
-.finalTotalInfo {
-  margin-top: 10px;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-}
-
 .radioLabel {
   padding: 10px 10px 10px 5px;
 }
@@ -590,12 +503,6 @@ $personTwo: #9fc5e8;
 .mainTitle {
   padding-top: 25px;
 }
-.contents {
-  padding: 0 15px;
-  border-bottom: 1px solid #d9d9d9;
-  padding-bottom: 15px;
-  margin-bottom: 15px;
-}
 .errorList {
   display: inline-block;
   background: #ff000030;
@@ -603,12 +510,6 @@ $personTwo: #9fc5e8;
   padding: 10px;
   border: 1px red solid;
   padding-left: 30px;
-}
-
-.singlePrice {
-  font-weight: bold;
-  font-size: 25px;
-  margin-left: 5px;
 }
 
 .deleteButton {
