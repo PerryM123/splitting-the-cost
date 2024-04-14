@@ -29,10 +29,10 @@
           />
         </div>
         <div class="butonArea">
-          <button @click="handleModalCancel">キャンセル</button>
-          <button class="modalActionButton" @click="handleEditItem">
+          <CommonButton @click="handleModalCancel">キャンセル</CommonButton>
+          <CommonButton class="modalActionButton" @click="handleEditItem">
             編集
-          </button>
+          </CommonButton>
         </div>
       </template>
       <template v-if="isOpenDeleteModal">
@@ -46,10 +46,10 @@
             <p>上記を削除しますか？</p>
           </div>
           <div class="butonArea">
-            <button @click="handleModalCancel">キャンセル</button>
-            <button class="modalActionButton" @click="handleDeleteItem">
+            <CommonButton @click="handleModalCancel">キャンセル</CommonButton>
+            <CommonButton class="modalActionButton" @click="handleDeleteItem">
               削除
-            </button>
+            </CommonButton>
           </div>
         </div>
       </template>
@@ -58,7 +58,7 @@
       <div class="mainTitle">
         <Title> Splitting The Cost </Title>
       </div>
-      <div class="contents" v-if="!isNextPage">
+      <div class="section firstPage" v-if="!isNextPage">
         <ul v-if="errorList.length" class="errorList">
           <li v-for="error in errorList">{{ error }}</li>
         </ul>
@@ -87,77 +87,26 @@
           />
         </div>
         <div class="butonArea">
-          <button @click="handleClickForStepOne">次へ</button>
+          <CommonButton :onClick="handleClickForStepOne">次へ</CommonButton>
         </div>
       </div>
       <div v-else>
         <!-- TODO: contentsもコンポーネント化は必須 -->
-        <div class="contents">
-          <div class="menuItem">
-            <p class="menuTitle">Person</p>
-            <div class="radioGroup">
-              <div class="radioItem">
-                <input
-                  v-model="selectedPerson"
-                  class="inputRadio"
-                  @click="handleRadioClick"
-                  type="radio"
-                  name="person"
-                  id="hannah"
-                  value="hannah"
-                />
-                <label class="radioLabel" for="hannah">Hannah</label>
-              </div>
-              <div class="radioItem">
-                <input
-                  v-model="selectedPerson"
-                  class="inputRadio"
-                  @click="handleRadioClick"
-                  type="radio"
-                  name="person"
-                  id="perry"
-                  value="perry"
-                />
-                <label class="radioLabel" for="perry">Perry</label>
-              </div>
-            </div>
-          </div>
-          <div class="menuItem">
-            <p class="menuTitle">Product Name</p>
-            <input
-              class="inputBox"
-              @keydown.enter="productNameEnterKey"
-              ref="productNameRef"
-              v-model="productName"
-              type="text"
-            />
-          </div>
-          <div class="menuItem">
-            <p class="menuTitle">Price</p>
-            <input
-              class="inputBox"
-              @keydown.enter="priceEnterKey"
-              ref="priceRef"
-              v-model="price"
-              type="number"
-              min="0"
-            />
-          </div>
-          <div class="butonArea">
-            <button @click="handleAddItem">Add Item</button>
-          </div>
+        <div class="section">
+          <PriceInput @handle-add-item="handleAddItem" />
         </div>
-        <!-- TODO: not highlighted like Title??? -->
-        <PriceInfo
-          @edit-grand-total="editGrandTotal"
-          :hannah-pay="hannahPay"
-          :perry-pay="perryPay"
-          :discount-total="discountTotal"
-          :both-totals="bothTotals"
-          :all-total="allTotal"
-          :inital-total="initalTotal"
-          :discounted-total="discountedTotal"
-        />
+        <div class="section">
+          <PriceInfo
+            @edit-grand-total="editGrandTotal"
+            :hannah-pay="hannahPay"
+            :perry-pay="perryPay"
+            :discount-total="discountTotal"
+            :both-totals="bothTotals"
+            :all-total="allTotal"
+            :inital-total="initalTotal"
+            :discounted-total="discountedTotal"
+          />
+        </div>
         <div
           v-if="perryData.items.length || hannahData.items.length"
           class="priceTable"
@@ -179,7 +128,7 @@
                 >
                   <td>{{ item.productName }}</td>
                   <td>{{ formatPrice(item.price) }}</td>
-                  <td>
+                  <td class="buttonTableItem">
                     <button
                       @click="(event) => handleOpenEditModal(event, item)"
                       :data-index="itemIndex"
@@ -207,6 +156,7 @@
   </div>
 </template>
 <script lang="ts" setup>
+// TODO: コンポーネント登録することが必須になるような設定方法ある？auto-importを外したい
 import Title from '@/components/atoms/Title.vue'
 import { computed, onMounted, ref } from 'vue'
 import type { ItemData, ShoppingData } from '@/interface/shopping'
@@ -215,7 +165,6 @@ import { USERS } from '@/constants/index'
 
 const initalTotal = ref(0)
 const discountTotal = ref(0)
-const price = ref<number>(0)
 const isNextPage = ref(false)
 const errorList = ref<string[]>([])
 const editProductName = ref()
@@ -228,14 +177,11 @@ const userToDelete = ref<string>()
 const indexToDelete = ref<number>()
 const priceToDelete = ref()
 const nameToDelete = ref()
-const productName = ref<string>('')
 const totalBoxRef = ref()
 const discountBoxRef = ref()
-const productNameRef = ref()
-const priceRef = ref()
 const editProductNameRef = ref()
 const editPriceRef = ref()
-const selectedPerson = ref<string>(USERS.HANNAH.NAME)
+
 const perryData = ref<ShoppingData>({
   displayName: USERS.PERRY.DISPLAY_NAME,
   name: USERS.PERRY.NAME,
@@ -256,22 +202,13 @@ const discountEnterKey = () => {
   handleClickForStepOne()
 }
 
-const productNameEnterKey = () => {
-  priceRef.value.focus()
-}
-
-const priceEnterKey = () => {
-  handleAddItem()
-  productNameRef.value.focus()
+const editPriceEnterKey = () => {
+  handleEditItem()
+  editProductNameRef.value.focus()
 }
 
 const editProductNameEnterKey = () => {
   editPriceRef.value.focus()
-}
-
-const editPriceEnterKey = () => {
-  handleEditItem()
-  editProductNameRef.value.focus()
 }
 
 const closeModal = () => {
@@ -313,22 +250,13 @@ const handleClickForStepOne = () => {
   }
   isNextPage.value = true
 }
-const handleRadioClick = () => {
-  productNameRef.value.focus()
-}
-const handleAddItem = () => {
-  const newItem: ItemData = {
-    productName: productName.value,
-    price: price.value
-  }
-  if (selectedPerson.value === USERS.HANNAH.NAME) {
+const handleAddItem = (newItem: ItemData) => {
+  if (newItem.userName === USERS.HANNAH.NAME) {
     hannahData.value.items.push(newItem)
   }
-  if (selectedPerson.value === USERS.PERRY.NAME) {
+  if (newItem.userName === USERS.PERRY.NAME) {
     perryData.value.items.push(newItem)
   }
-  productName.value = ''
-  price.value = 0
 }
 
 const handleModalCancel = () => {
@@ -433,17 +361,9 @@ $personTwo: #9fc5e8;
   width: 100%;
 }
 
-.contents {
-  padding: 0 15px;
-}
-
 .inputBox {
   width: 100%;
-}
-
-.radioGroup {
-  display: flex;
-  gap: 10px;
+  padding: 10px 5px;
 }
 
 .theActualPriceTable {
@@ -467,6 +387,12 @@ $personTwo: #9fc5e8;
   td {
     text-align: left;
     padding: 8px;
+    max-width: 100px;
+    word-break: break-all;
+  }
+
+  .buttonTableItem {
+    text-align: right;
   }
 }
 
@@ -492,15 +418,6 @@ $personTwo: #9fc5e8;
   align-items: center;
 }
 
-.menuItem {
-  margin-top: 10px;
-}
-
-.menuTitle {
-  font-size: 20px;
-  // TODO: normalizerをなくし、reset.cssに変更
-  margin: 0;
-}
 .mainTitle {
   padding-top: 25px;
 }
@@ -543,5 +460,14 @@ $personTwo: #9fc5e8;
     text-align: center;
     margin: 0;
   }
+}
+.section {
+  padding: 0 15px;
+  border-bottom: 1px solid #d9d9d9;
+  padding-bottom: 25px;
+  margin-bottom: 25px;
+}
+.firstPage {
+  padding-top: 10px;
 }
 </style>

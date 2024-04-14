@@ -40,7 +40,7 @@
         >合計:<span class="grandTotal">{{
           formatPrice(props.initalTotal)
         }}</span></span
-      ><button @click="editGrandTotal">合計編集</button>
+      ><CommonButton @click="editGrandTotal">合計編集</CommonButton>
     </div>
     <div v-if="props.discountTotal" class="finalTotalInfo">
       <span class="totalText"
@@ -94,12 +94,6 @@ const editGrandTotal = () => {
 // TODO: color変数は共通化
 $personOne: #f4cccc;
 $personTwo: #9fc5e8;
-.priceInfo {
-  padding: 0 15px;
-  border-bottom: 1px solid #d9d9d9;
-  padding-bottom: 15px;
-  margin-bottom: 15px;
-}
 
 .boxTotal {
   position: relative;
