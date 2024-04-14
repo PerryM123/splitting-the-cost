@@ -13,6 +13,6 @@ export default defineNuxtConfig({
     dirs: []
   },
   app: {
-    baseURL: '/<reponame>'
+    baseURL: '/<reponame>/'
   }
 })
