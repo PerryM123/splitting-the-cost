@@ -13,6 +13,6 @@ export default defineNuxtConfig({
     dirs: []
   },
   app: {
-    baseURL: '/splitting-the-cost'
+    baseURL: '/splitting-the-cost/'
   }
 })
