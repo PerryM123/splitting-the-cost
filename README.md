@@ -4,6 +4,8 @@
 ## イメージ
 <img src="./docs/sample.gif">
 
+Github Pages: https://perrym123.github.io/splitting-the-cost/
+
 ## いつかやりたいこと
 - [ ] github page作成
 - [ ] もっとAtomicDesignを活用する
