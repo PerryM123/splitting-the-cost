@@ -1,4 +1,3 @@
-<!-- TODO: localStorageでデータを保存？cookie？ -->
 <template>
   <div class="c-app">
     <CommonModal
@@ -91,7 +90,6 @@
         </div>
       </div>
       <div v-else>
-        <!-- TODO: contentsもコンポーネント化は必須 -->
         <div class="section">
           <PriceInput @handle-add-item="handleAddItem" />
         </div>
@@ -344,7 +342,7 @@ onMounted(() => {
 })
 </script>
 <style lang="scss" scoped>
-// TODO: color変数は共通化
+// TODO: color変数共通化必須
 $personOne: #f4cccc;
 $personTwo: #9fc5e8;
 

@@ -1,49 +1,34 @@
 # Splitting The Cost!
+計算機を持ちながら自分で計算することをやめるようにレシートなどの割り勘アプリを作成しました！
 
-## TODO
-- [ ] ディレクトリ作成
-  - [ ] src
-  - [ ] components
-  - [ ] pages
-  - [ ] server
+## イメージ
+<img src="./docs/sample.gif">
 
-## Setup (TODO!)
+## いつかやりたいこと
+- [ ] github page作成
+- [ ] もっとAtomicDesignを活用する
+- [ ] 以前登録したデータをlocal storageに保存
+- [ ] nodeバージョンを固定(nvmrcなど)
+- [ ] Vue Testing Libraryを利用（[参考](https://github.com/testing-library/vue-testing-library)）
+- [ ] バックエンドと連携し、Dockerのコンテナ化
+- [ ] 多言語サポート（日本語 ＆ 英語）
+
+## Setup
 
 Make sure to install the dependencies:
 
 ```bash
-# yarn
 yarn install
 ```
 
 ## Development Server
 
-### 事前準備
-- 実機で確認したい場合 (参考: [Nuxt3をhttpsで起動(ローカル環境) by numa241さん](https://note.com/nissy241/n/nddfabf3bd793))
-
 ```bash
-$ yarn dev:ssl
-```
-
-```bash
-# yarn
 yarn dev
 ```
 
-## Production
-
-Build the application for production:
+### 手元のスマホ端末で動作確認したい場合
 
 ```bash
-# yarn
-yarn build
+$ yarn dev:host
 ```
-
-Locally preview production build:
-
-```bash
-# yarn
-yarn preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.

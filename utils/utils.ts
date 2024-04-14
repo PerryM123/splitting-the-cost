@@ -1,4 +1,3 @@
-// TODO: ファイルファイル名は考え中
 import type { ShoppingData } from '~/interface/shopping'
 
 export const getPersonalTotal = (data: ShoppingData) => {

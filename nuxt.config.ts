@@ -2,7 +2,6 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ['@/assets/styles/normalize.css'],
-  // TODO: これ必要？？
   components: [
     {
       path: '~/components/',
