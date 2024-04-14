@@ -1,7 +1,8 @@
 {
-  "name": "nuxt-app",
+  "name": "splitting-the-cost",
   "private": true,
   "type": "module",
+  "homepage": "https://perrym123.github.io/splitting-the-cost",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt prepare && nuxt dev",
