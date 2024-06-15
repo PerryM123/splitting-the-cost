@@ -11,8 +11,5 @@ export default defineNuxtConfig({
   imports: {
     autoImport: false,
     dirs: []
-  },
-  app: {
-    baseURL: '/<reponame>'
   }
 })
