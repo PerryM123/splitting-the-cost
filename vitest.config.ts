@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config'
 import vue from '@vitejs/plugin-vue'
+import path from 'path'
 
 export default defineConfig({
   plugins: [vue()],
@@ -10,6 +11,11 @@ export default defineConfig({
       provider: 'playwright',
       // https://playwright.dev
       providerOptions: {}
+    }
+  },
+  resolve: {
+    alias: {
+      '@/': path.resolve(__dirname, './')
     }
   }
 })
